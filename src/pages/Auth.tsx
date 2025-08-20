@@ -31,12 +31,12 @@ export const Auth = () => {
       if (error) throw error;
 
       toast({
-        title: "Success!",
-        description: "Please check your email to confirm your account.",
+        title: "Konto skapat!",
+        description: "Kolla din e-post och klicka på bekräftelselänken för att aktivera ditt konto.",
       });
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Fel",
         description: error.message,
         variant: "destructive",
       });
@@ -55,16 +55,22 @@ export const Auth = () => {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Provide better error messages for common issues
+        if (error.message === 'Invalid login credentials') {
+          throw new Error('Ogiltiga inloggningsuppgifter. Kontrollera att du har bekräftat din e-post eller att e-post och lösenord är korrekta.');
+        }
+        throw error;
+      }
 
       toast({
-        title: "Welcome back!",
-        description: "You have been signed in successfully.",
+        title: "Välkommen tillbaka!",
+        description: "Du har loggats in.",
       });
       navigate('/');
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Fel",
         description: error.message,
         variant: "destructive",
       });
@@ -77,22 +83,22 @@ export const Auth = () => {
     <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[calc(100vh-200px)]">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Welcome to TeeShop</CardTitle>
+          <CardTitle>Välkommen till TeeShop</CardTitle>
           <CardDescription>
-            Sign in to your account or create a new one
+            Logga in på ditt konto eller skapa ett nytt. OBS: Du måste bekräfta din e-post innan du kan logga in.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="signin">Logga in</TabsTrigger>
+              <TabsTrigger value="signup">Registrera</TabsTrigger>
             </TabsList>
             
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div>
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">E-post</Label>
                   <Input
                     id="email"
                     type="email"
@@ -102,7 +108,7 @@ export const Auth = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">Lösenord</Label>
                   <Input
                     id="password"
                     type="password"
@@ -112,7 +118,7 @@ export const Auth = () => {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Signing in...' : 'Sign In'}
+                  {loading ? 'Loggar in...' : 'Logga in'}
                 </Button>
               </form>
             </TabsContent>
@@ -120,7 +126,7 @@ export const Auth = () => {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div>
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="signup-email">E-post</Label>
                   <Input
                     id="signup-email"
                     type="email"
@@ -130,7 +136,7 @@ export const Auth = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="signup-password">Password</Label>
+                  <Label htmlFor="signup-password">Lösenord (minst 6 tecken)</Label>
                   <Input
                     id="signup-password"
                     type="password"
@@ -141,7 +147,7 @@ export const Auth = () => {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Creating account...' : 'Sign Up'}
+                  {loading ? 'Skapar konto...' : 'Registrera'}
                 </Button>
               </form>
             </TabsContent>
