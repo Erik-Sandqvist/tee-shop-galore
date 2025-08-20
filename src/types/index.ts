@@ -1,0 +1,49 @@
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category_id: string;
+  image_url: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProductVariant {
+  id: string;
+  product_id: string;
+  color: string;
+  size: string;
+  stock_quantity: number;
+  created_at: string;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  description: string;
+  created_at: string;
+}
+
+export interface CartItem {
+  id: string;
+  user_id: string;
+  product_variant_id: string;
+  quantity: number;
+  created_at: string;
+  updated_at: string;
+  product_variants?: ProductVariant & {
+    products?: Product;
+  };
+}
+
+export interface Order {
+  id: string;
+  user_id: string;
+  total_amount: number;
+  status: string;
+  shipping_address?: any;
+  created_at: string;
+  updated_at: string;
+}
