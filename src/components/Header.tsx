@@ -36,7 +36,7 @@ export const Header = () => {
     <header className="border-b bg-background">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link to="/" className="text-2xl font-bold text-primary">
-          TeeShop
+         Eriks Store
         </Link>
         
         <nav className="hidden md:flex space-x-6">
