@@ -144,13 +144,13 @@ export type Database = {
       }
       product_variants: {
         Row: {
-          color: string
-          created_at: string
-          id: string
-          product_id: string | null
-          size: string
-          stock_quantity: number | null
-        }
+    color: string
+    created_at: string
+    id: string
+    product_id: string | null
+    size: string
+    stock_quantity: number | null
+  }
         Insert: {
           color: string
           created_at?: string
