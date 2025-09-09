@@ -31,7 +31,8 @@ function FeaturedProducts() {
             .limit(8),              // justera antal om du vill
           supabase
             .from('product_variants')
-            .select('id,product_id'),
+            // Vi behöver storlek (size) för att visa val i ProductCard. Tar även med color & stock_quantity för ev. framtida behov.
+            .select('id,product_id,size,color,stock_quantity'),
           supabase
             .from('categories')
             .select('id,name')
