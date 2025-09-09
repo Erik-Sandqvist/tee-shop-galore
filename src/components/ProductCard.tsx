@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
-import { Product, ProductVariant } from '@/types';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCart } from '@/hooks/useCart';
+import { useState, useEffect } from "react";
+import { Product, ProductVariant } from "@/types";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useCart } from "@/hooks/useCart";
+import { cn } from "@/lib/utils";
 
 interface ProductCardProps {
   product: Product;
@@ -12,97 +12,131 @@ interface ProductCardProps {
 }
 
 export const ProductCard = ({ product, variants }: ProductCardProps) => {
-  // Nu väljer användaren endast storlek. Färg ignoreras.
-  const [selectedSize, setSelectedSize] = useState<string>('');
+  const [selectedSize, setSelectedSize] = useState<string>("");
   const { addToCart } = useCart();
 
-  const inStockVariants = variants.filter(v => v.stock_quantity > 0);
-  const availableSizes = [...new Set(inStockVariants.map(v => v.size))];
-  const sizeOrder = ['XS','S','M','L','XL','XXL','3XL'];
-  const orderedSizes = [...availableSizes].filter(Boolean).sort((a,b) => {
-    const ia = sizeOrder.indexOf(a.toUpperCase());
-    const ib = sizeOrder.indexOf(b.toUpperCase());
-    if (ia === -1 && ib === -1) return a.localeCompare(b);
-    if (ia === -1) return 1;
-    if (ib === -1) return -1;
-    return ia - ib;
-  });
-  // Fallback: om inga storlekar finns men varianter existerar, behandla som "One Size"
-  const effectiveSizes = orderedSizes.length > 0
-    ? orderedSizes
-    : (inStockVariants.length === 0 ? [] : ['One Size']);
+  // Normalisera storlekar
+  const sizeOrder = ["XS", "S", "M", "L", "XL", "XXL"] as const;
+  const normalized = variants.map((v) => ({
+    ...v,
+    size: v.size ? v.size.toUpperCase() : v.size,
+  }));
 
-  // Auto-välj första storlek om inget valt ännu
+  // Alla storlekar från varianterna, i rätt ordning
+  const allSizes = [...new Set(normalized.map((v) => v.size).filter(Boolean))];
+  const orderedAllSizes = [...allSizes].sort(
+    (a, b) => sizeOrder.indexOf(a as any) - sizeOrder.indexOf(b as any)
+  );
+
+  // Hitta lagerstatus
+  const inStockVariants = normalized.filter((v) => v.stock_quantity > 0);
+  const selectedVariant =
+    // först: hitta en variant med lager för vald storlek
+    normalized.find((v) => v.size === selectedSize && v.stock_quantity > 0) ||
+    // annars: ta första varianten för storleken (slut i lager)
+    normalized.find((v) => v.size === selectedSize) ||
+    // fallback: första i lager om ingen storlek är vald
+    (selectedSize ? undefined : inStockVariants[0]);
+
+  const allOutOfStock = normalized.every((v) => v.stock_quantity === 0);
+  const selectedOut = selectedVariant && selectedVariant.stock_quantity === 0;
+
+  // Auto-välj första i lager om inget valt
   useEffect(() => {
-    if (!selectedSize && effectiveSizes.length > 0) {
-      setSelectedSize(effectiveSizes[0]);
+    if (!selectedSize && inStockVariants.length > 0) {
+      setSelectedSize(inStockVariants[0].size!);
     }
-  }, [effectiveSizes, selectedSize]);
-  // Om flera varianter har samma storlek men olika färger tar vi den första.
-  // Förvald variant: prioritera i lager, annars första matchande
-  const selectedVariant = (inStockVariants.find(v => v.size === selectedSize))
-    || variants.find(v => v.size === selectedSize);
+  }, [selectedSize, inStockVariants]);
 
   const handleAddToCart = () => {
-    if (selectedVariant) {
+    if (selectedVariant && selectedVariant.stock_quantity > 0) {
       addToCart(selectedVariant.id);
     }
   };
 
   return (
-    <Card className="overflow-hidden group hover:shadow-lg transition-shadow">
-      <div className="aspect-square overflow-hidden">
-        <img 
-          src={product.image_url} 
+    <Card className="overflow-hidden group hover:shadow-lg transition-shadow relative">
+      {/* Produktbild */}
+      <div className="aspect-square overflow-hidden relative">
+        <img
+          src={product.image_url}
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
+        {allOutOfStock && (
+          <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+            Slut i lager
+          </div>
+        )}
       </div>
-      
+
       <CardContent className="p-4">
         <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
         <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
           {product.description}
         </p>
+
         <div className="flex items-center justify-between mb-4">
-          <span className="text-2xl font-bold text-primary">${product.price}</span>
+          <span className="text-2xl font-bold text-primary">
+            ${product.price}
+          </span>
           {selectedVariant && (
-            <Badge variant={selectedVariant.stock_quantity > 0 ? "default" : "destructive"}>
-              {selectedVariant.stock_quantity > 0 ? "In Stock" : "Out of Stock"}
+            <Badge
+              variant={selectedVariant.stock_quantity > 0 ? "default" : "destructive"}
+            >
+              {selectedVariant.stock_quantity > 0 ? "I lager" : "Slut"}
             </Badge>
           )}
         </div>
 
-        <div>
-          <label className="text-sm font-medium mb-1 block">Size</label>
-          {effectiveSizes.length === 0 ? (
-            <div className="text-sm font-medium text-destructive">Slut i lager</div>
-          ) : effectiveSizes.length === 1 ? (
-            <div className="text-sm text-muted-foreground">{effectiveSizes[0]}</div>
-          ) : (
-            <Select value={selectedSize} onValueChange={setSelectedSize}>
-              <SelectTrigger>
-                <SelectValue placeholder="Välj storlek" />
-              </SelectTrigger>
-              <SelectContent>
-                {effectiveSizes.map(size => (
-                  <SelectItem key={size} value={size}>
-                    {size}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        {/* Storleksknappar */}
+        <div className="mb-3">
+          <div className="flex flex-wrap gap-2">
+            {orderedAllSizes.map((size) => {
+              const sizeVariants = normalized.filter((v) => v.size === size);
+              const inStock = sizeVariants.some((v) => v.stock_quantity > 0);
+              const isActive = size === selectedSize;
+
+              return (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => inStock && setSelectedSize(size!)}
+                  disabled={!inStock}
+                  className={cn(
+                    "px-3 py-1 border rounded text-sm transition",
+                    isActive
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background",
+                    inStock
+                      ? isActive
+                        ? ""
+                        : "hover:bg-muted cursor-pointer"
+                      : "opacity-40 line-through cursor-not-allowed"
+                  )}
+                >
+                  {size}
+                </button>
+              );
+            })}
+          </div>
+          {selectedOut && (
+            <p className="text-xs text-destructive mt-2">
+              Slut i lager för denna storlek
+            </p>
           )}
         </div>
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
-        <Button 
-          className="w-full" 
+        <Button
+          className="w-full"
           onClick={handleAddToCart}
           disabled={!selectedVariant || selectedVariant.stock_quantity === 0}
         >
-          Add to Cart
+          {selectedVariant?.stock_quantity === 0
+            ? "Slut i lager"
+            : "Lägg i kundvagn"}
         </Button>
       </CardFooter>
     </Card>
