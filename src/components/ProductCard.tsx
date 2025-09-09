@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Product, ProductVariant } from '@/types';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,14 +12,36 @@ interface ProductCardProps {
 }
 
 export const ProductCard = ({ product, variants }: ProductCardProps) => {
-  const [selectedColor, setSelectedColor] = useState<string>('');
+  // Nu väljer användaren endast storlek. Färg ignoreras.
   const [selectedSize, setSelectedSize] = useState<string>('');
   const { addToCart } = useCart();
 
-  const availableColors = [...new Set(variants.map(v => v.color))];
-  const availableSizes = [...new Set(variants.filter(v => v.color === selectedColor).map(v => v.size))];
-  
-  const selectedVariant = variants.find(v => v.color === selectedColor && v.size === selectedSize);
+  const inStockVariants = variants.filter(v => v.stock_quantity > 0);
+  const availableSizes = [...new Set(inStockVariants.map(v => v.size))];
+  const sizeOrder = ['XS','S','M','L','XL','XXL','3XL'];
+  const orderedSizes = [...availableSizes].filter(Boolean).sort((a,b) => {
+    const ia = sizeOrder.indexOf(a.toUpperCase());
+    const ib = sizeOrder.indexOf(b.toUpperCase());
+    if (ia === -1 && ib === -1) return a.localeCompare(b);
+    if (ia === -1) return 1;
+    if (ib === -1) return -1;
+    return ia - ib;
+  });
+  // Fallback: om inga storlekar finns men varianter existerar, behandla som "One Size"
+  const effectiveSizes = orderedSizes.length > 0
+    ? orderedSizes
+    : (inStockVariants.length === 0 ? [] : ['One Size']);
+
+  // Auto-välj första storlek om inget valt ännu
+  useEffect(() => {
+    if (!selectedSize && effectiveSizes.length > 0) {
+      setSelectedSize(effectiveSizes[0]);
+    }
+  }, [effectiveSizes, selectedSize]);
+  // Om flera varianter har samma storlek men olika färger tar vi den första.
+  // Förvald variant: prioritera i lager, annars första matchande
+  const selectedVariant = (inStockVariants.find(v => v.size === selectedSize))
+    || variants.find(v => v.size === selectedSize);
 
   const handleAddToCart = () => {
     if (selectedVariant) {
@@ -51,39 +73,25 @@ export const ProductCard = ({ product, variants }: ProductCardProps) => {
           )}
         </div>
 
-        <div className="space-y-3">
-          <div>
-            <label className="text-sm font-medium mb-1 block">Color</label>
-            <Select value={selectedColor} onValueChange={setSelectedColor}>
+        <div>
+          <label className="text-sm font-medium mb-1 block">Size</label>
+          {effectiveSizes.length === 0 ? (
+            <div className="text-sm font-medium text-destructive">Slut i lager</div>
+          ) : effectiveSizes.length === 1 ? (
+            <div className="text-sm text-muted-foreground">{effectiveSizes[0]}</div>
+          ) : (
+            <Select value={selectedSize} onValueChange={setSelectedSize}>
               <SelectTrigger>
-                <SelectValue placeholder="Select color" />
+                <SelectValue placeholder="Välj storlek" />
               </SelectTrigger>
               <SelectContent>
-                {availableColors.map(color => (
-                  <SelectItem key={color} value={color}>
-                    {color}
+                {effectiveSizes.map(size => (
+                  <SelectItem key={size} value={size}>
+                    {size}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </div>
-
-          {selectedColor && (
-            <div>
-              <label className="text-sm font-medium mb-1 block">Size</label>
-              <Select value={selectedSize} onValueChange={setSelectedSize}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select size" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableSizes.map(size => (
-                    <SelectItem key={size} value={size}>
-                      {size}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           )}
         </div>
       </CardContent>
