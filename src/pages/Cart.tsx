@@ -4,90 +4,82 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { ProductVariant, Product } from '@/types';
+
+interface CombinedCartItem {
+  id: string;
+  quantity: number;
+  product_variants?: ProductVariant & { products?: Product };
+  type: 'user' | 'guest';
+}
 
 export const Cart = () => {
-  const { cartItems, updateQuantity, removeFromCart, getTotalPrice, loading } = useCart();
+  const { cartItems, guestCart, addToCart, updateQuantity, removeFromCart, getTotalPrice, loading } = useCart();
+  const [combinedCart, setCombinedCart] = useState<CombinedCartItem[]>([]);
 
-  if (loading) {
+  useEffect(() => {
+    // Convert guestCart to CombinedCartItem using global window.variants for product info
+    const mappedGuest = guestCart.map(item => {
+      const variant = (window as any).variants?.find((v: ProductVariant & { products?: Product }) => v.id === item.product_variant_id);
+      return {
+        id: item.product_variant_id,
+        quantity: item.quantity,
+        product_variants: variant,
+        type: 'guest' as const
+      };
+    });
+
+    const mappedUser = cartItems.map(item => ({
+      ...item,
+      type: 'user' as const
+    }));
+
+    setCombinedCart([...mappedUser, ...mappedGuest]);
+  }, [cartItems, guestCart]);
+
+  if (loading) return <div className="text-center py-8">Loading cart...</div>;
+  if (combinedCart.length === 0)
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">Loading cart...</div>
+      <div className="text-center py-8">
+        <h1 className="text-3xl font-bold">Your Cart</h1>
+        <p className="text-muted-foreground">Your cart is empty</p>
+        <Link to="/products"><Button>Continue Shopping</Button></Link>
       </div>
     );
-  }
-
-  if (cartItems.length === 0) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center space-y-4">
-          <h1 className="text-3xl font-bold">Your Cart</h1>
-          <p className="text-muted-foreground">Your cart is empty</p>
-          <Link to="/products">
-            <Button>Continue Shopping</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Your Cart</h1>
-      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-4">
-          {cartItems.map(item => {
+          {combinedCart.map(item => {
             const product = item.product_variants?.products;
             const variant = item.product_variants;
-            
-            if (!product || !variant) return null;
+            if (!variant || !product) return null;
 
             return (
               <Card key={item.id}>
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-4">
-                    <img 
-                      src={product.image_url} 
-                      alt={product.name}
-                      className="w-20 h-20 object-cover rounded"
-                    />
-                    
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{product.name}</h3>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <Badge variant="outline">{variant.color}</Badge>
-                        <Badge variant="outline">{variant.size}</Badge>
-                      </div>
-                      <p className="text-lg font-bold mt-2">${product.price}</p>
+                <CardContent className="p-6 flex items-center space-x-4">
+                  <img src={product.image_url} alt={product.name} className="w-20 h-20 object-cover rounded" />
+                  <div className="flex-1">
+                    <h3 className="font-semibold">{product.name}</h3>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <Badge variant="outline">{variant.color}</Badge>
+                      <Badge variant="outline">{variant.size}</Badge>
                     </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <span className="w-8 text-center">{item.quantity}</span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => removeFromCart(item.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <p className="text-lg font-bold mt-2">${product.price}</p>
                   </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Button variant="outline" size="icon" onClick={() => updateQuantity(item.id, item.quantity - 1)}><Minus className="h-4 w-4" /></Button>
+                    <span className="w-8 text-center">{item.quantity}</span>
+                    <Button variant="outline" size="icon" onClick={() => updateQuantity(item.id, item.quantity + 1)}><Plus className="h-4 w-4" /></Button>
+                  </div>
+
+                  <Button variant="outline" size="icon" onClick={() => removeFromCart(item.id)} className="text-destructive hover:text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </CardContent>
               </Card>
             );
@@ -104,13 +96,9 @@ export const Cart = () => {
                 <span>Total:</span>
                 <span>${getTotalPrice().toFixed(2)}</span>
               </div>
-              <Button className="w-full" size="lg">
-                Proceed to Checkout
-              </Button>
+              <Button className="w-full" size="lg">Proceed to Checkout</Button>
               <Link to="/products" className="block">
-                <Button variant="outline" className="w-full">
-                  Continue Shopping
-                </Button>
+                <Button variant="outline" className="w-full">Continue Shopping</Button>
               </Link>
             </CardContent>
           </Card>

@@ -1,15 +1,27 @@
-import { useState, useEffect } from "react";
-import { Product, ProductVariant } from "@/types";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+// TypeScript React (TSX)
+import { useEffect, useState } from "react";
 import { useCart } from "@/hooks/useCart";
 import { cn } from "@/lib/utils";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Product, ProductVariant } from "@/types";
 
 interface ProductCardProps {
   product: Product;
   variants: ProductVariant[];
 }
+
+// Robust lagerläsning
+const getStock = (v: ProductVariant) => {
+  const raw =
+    (v as any).stock_quantity ??
+    (v as any).stock ??
+    (v as any).inventory ??
+    (v as any).quantity ??
+    0;
+  const n = typeof raw === "string" ? parseInt(raw, 10) : Number(raw);
+  return Number.isFinite(n) ? n : 0;
+};
 
 export const ProductCard = ({ product, variants }: ProductCardProps) => {
   const [selectedSize, setSelectedSize] = useState<string>("");
@@ -19,27 +31,30 @@ export const ProductCard = ({ product, variants }: ProductCardProps) => {
   const sizeOrder = ["XS", "S", "M", "L", "XL", "XXL"] as const;
   const normalized = variants.map((v) => ({
     ...v,
-    size: v.size ? v.size.toUpperCase() : v.size,
+    size: v.size ? String(v.size).toUpperCase() : v.size,
   }));
 
-  // Alla storlekar från varianterna, i rätt ordning
-  const allSizes = [...new Set(normalized.map((v) => v.size).filter(Boolean))];
-  const orderedAllSizes = [...allSizes].sort(
-    (a, b) => sizeOrder.indexOf(a as any) - sizeOrder.indexOf(b as any)
-  );
+  // Alla storlekar i rätt ordning
+  const allSizes = [...new Set(normalized.map((v) => v.size).filter(Boolean))] as string[];
+  const orderedAllSizes = [...allSizes].sort((a, b) => {
+    const ai = sizeOrder.indexOf(a as any);
+    const bi = sizeOrder.indexOf(b as any);
+    if (ai === -1 && bi === -1) return a.localeCompare(b);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
 
-  // Hitta lagerstatus
-  const inStockVariants = normalized.filter((v) => v.stock_quantity > 0);
+  // Lagerstatus och vald variant
+  const inStockVariants = normalized.filter((v) => getStock(v) > 0);
   const selectedVariant =
-    // först: hitta en variant med lager för vald storlek
-    normalized.find((v) => v.size === selectedSize && v.stock_quantity > 0) ||
-    // annars: ta första varianten för storleken (slut i lager)
+    normalized.find((v) => v.size === selectedSize && getStock(v) > 0) ||
     normalized.find((v) => v.size === selectedSize) ||
-    // fallback: första i lager om ingen storlek är vald
-    (selectedSize ? undefined : inStockVariants[0]);
+    (selectedSize ? undefined : inStockVariants[0]) ||
+    normalized[0];
 
-  const allOutOfStock = normalized.every((v) => v.stock_quantity === 0);
-  const selectedOut = selectedVariant && selectedVariant.stock_quantity === 0;
+  const allOutOfStock = normalized.every((v) => getStock(v) === 0);
+  const selectedOut = !selectedVariant || getStock(selectedVariant) === 0;
 
   // Auto-välj första i lager om inget valt
   useEffect(() => {
@@ -48,8 +63,11 @@ export const ProductCard = ({ product, variants }: ProductCardProps) => {
     }
   }, [selectedSize, inStockVariants]);
 
+  const sizeHasStock = (size: string) =>
+    normalized.some((v) => v.size === size && getStock(v) > 0);
+
   const handleAddToCart = () => {
-    if (selectedVariant && selectedVariant.stock_quantity > 0) {
+    if (selectedVariant && getStock(selectedVariant) > 0) {
       addToCart(selectedVariant.id);
     }
   };
@@ -70,73 +88,48 @@ export const ProductCard = ({ product, variants }: ProductCardProps) => {
         )}
       </div>
 
-      <CardContent className="p-4">
-        <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
-        <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
-          {product.description}
-        </p>
-
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-2xl font-bold text-primary">
-            ${product.price}
-          </span>
-          {selectedVariant && (
-            <Badge
-              variant={selectedVariant.stock_quantity > 0 ? "default" : "destructive"}
-            >
-              {selectedVariant.stock_quantity > 0 ? "I lager" : "Slut"}
-            </Badge>
-          )}
+      <CardContent className="p-4 space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="font-medium line-clamp-2">{product.name}</h3>
         </div>
 
-        {/* Storleksknappar */}
-        <div className="mb-3">
+        {/* Storlekar */}
+        {orderedAllSizes.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {orderedAllSizes.map((size) => {
-              const sizeVariants = normalized.filter((v) => v.size === size);
-              const inStock = sizeVariants.some((v) => v.stock_quantity > 0);
-              const isActive = size === selectedSize;
-
+              const available = sizeHasStock(size);
+              const isSelected = selectedSize === size;
               return (
                 <button
                   key={size}
                   type="button"
-                  onClick={() => inStock && setSelectedSize(size!)}
-                  disabled={!inStock}
+                  onClick={() => setSelectedSize(size)}
+                  disabled={!available}
                   className={cn(
-                    "px-3 py-1 border rounded text-sm transition",
-                    isActive
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-background",
-                    inStock
-                      ? isActive
-                        ? ""
-                        : "hover:bg-muted cursor-pointer"
-                      : "opacity-40 line-through cursor-not-allowed"
+                    "px-3 py-1.5 text-sm rounded border transition",
+                    isSelected
+                      ? "bg-black text-white border-black"
+                      : "bg-white text-black hover:bg-neutral-100",
+                    !available && "opacity-50 cursor-not-allowed"
                   )}
+                  aria-pressed={isSelected}
                 >
                   {size}
                 </button>
               );
             })}
           </div>
-          {selectedOut && (
-            <p className="text-xs text-destructive mt-2">
-              Slut i lager för denna storlek
-            </p>
-          )}
-        </div>
+        )}
+        {selectedOut && (
+          <p className="text-xs text-destructive mt-2">
+            Slut i lager för denna storlek
+          </p>
+        )}
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
-        <Button
-          className="w-full"
-          onClick={handleAddToCart}
-          disabled={!selectedVariant || selectedVariant.stock_quantity === 0}
-        >
-          {selectedVariant?.stock_quantity === 0
-            ? "Slut i lager"
-            : "Lägg i kundvagn"}
+        <Button className="w-full" onClick={handleAddToCart} disabled={selectedOut}>
+          {selectedOut ? "Slut i lager" : "Lägg i kundvagn"}
         </Button>
       </CardFooter>
     </Card>
