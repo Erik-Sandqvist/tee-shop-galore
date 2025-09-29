@@ -8,6 +8,7 @@ import { Products } from "./pages/Products";
 import { Cart } from "./pages/Cart";
 import { Auth } from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import { Header } from "./components/Header";
 
 const queryClient = new QueryClient();
 
@@ -17,6 +18,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <Header />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/products" element={<Products />} />

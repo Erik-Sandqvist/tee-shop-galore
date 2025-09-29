@@ -88,7 +88,6 @@ function FeaturedProducts() {
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
-      <Header />
 
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-primary/10 to-accent/10 py-20">
