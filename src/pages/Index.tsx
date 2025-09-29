@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Header } from '@/components/Header';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,17 +24,16 @@ function FeaturedProducts() {
         const [productsRes, variantsRes, categoriesRes] = await Promise.all([
           supabase
             .from('products')
-            .select('id,name,price,image_url,is_active,category_id,created_at,description,updated_at')
+            .select('*')
             .eq('is_active', true)
             .order('created_at', { ascending: false })
-            .limit(8),              // justera antal om du vill
+            .limit(8),
           supabase
             .from('product_variants')
-            // Vi behöver storlek (size) för att visa val i ProductCard. Tar även med color & stock_quantity för ev. framtida behov.
-            .select('id,product_id,size,color,stock_quantity'),
+            .select('*'),
           supabase
             .from('categories')
-            .select('id,name')
+            .select('*')
         ]);
 
         if (cancelled) return;
@@ -51,6 +49,10 @@ function FeaturedProducts() {
     fetchData();
     return () => { cancelled = true; };
   }, []);
+
+  const getProductVariants = (productId: string) => {
+    return variants.filter(v => v.product_id === productId);
+  };
 
   if (loading) {
     return (
@@ -72,11 +74,11 @@ function FeaturedProducts() {
 
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {products.map(p => (
+      {products.map(product => (
         <ProductCard
-          key={p.id}
-            product={p}
-            variants={variants.filter(v => v.product_id === p.id)}
+          key={product.id}
+          product={product}
+          variants={getProductVariants(product.id)}
         />
       ))}
     </div>
@@ -87,12 +89,12 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-primary/10 to-accent/10 py-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-5xl font-bold mb-6 text-foreground">
-             Eriks Store
+            Eriks Store
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Discover our collection of high-quality, comfortable t-shirts in various colors and sizes. 
@@ -112,7 +114,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-
 
       {/* Featured Products */}
       <section className="py-16">
