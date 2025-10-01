@@ -39,14 +39,14 @@ export const Header = () => {
          Eriks Store
         </Link>
         
-        <nav className="hidden md:flex space-x-6">
+        {/* <nav className="hidden md:flex space-x-6">
           <Link to="/" className="text-foreground hover:text-primary transition-colors">
             Home
           </Link>
           <Link to="/products" className="text-foreground hover:text-primary transition-colors">
             Products
           </Link>
-        </nav>
+        </nav> */}
 
         <div className="flex items-center space-x-4">
           <Link to="/cart">
