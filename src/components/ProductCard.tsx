@@ -1,5 +1,5 @@
-// TypeScript React (TSX)
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -26,6 +26,7 @@ const getStock = (v: ProductVariant) => {
 export const ProductCard = ({ product, variants }: ProductCardProps) => {
   const [selectedSize, setSelectedSize] = useState<string>("");
   const { addToCart } = useCart();
+  const navigate = useNavigate();
 
   // Normalisera storlekar
   const sizeOrder = ["XS", "S", "M", "L", "XL", "XXL"] as const;
@@ -66,14 +67,22 @@ export const ProductCard = ({ product, variants }: ProductCardProps) => {
   const sizeHasStock = (size: string) =>
     normalized.some((v) => v.size === size && getStock(v) > 0);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Förhindra navigation när man klickar på knappen
     if (selectedVariant && getStock(selectedVariant) > 0) {
       addToCart(selectedVariant.id);
     }
   };
 
+  const handleCardClick = () => {
+    navigate(`/products/${product.id}`);
+  };
+
   return (
-    <Card className="overflow-hidden group hover:shadow-lg transition-shadow relative">
+    <Card 
+      className="overflow-hidden group hover:shadow-lg transition-shadow relative cursor-pointer"
+      onClick={handleCardClick}
+    >
       {/* Produktbild */}
       <div className="aspect-square overflow-hidden relative">
         <img
@@ -93,9 +102,11 @@ export const ProductCard = ({ product, variants }: ProductCardProps) => {
           <h3 className="font-medium line-clamp-2">{product.name}</h3>
         </div>
 
+        <p className="text-lg font-bold">{product.price} kr</p>
+
         {/* Storlekar */}
         {orderedAllSizes.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
             {orderedAllSizes.map((size) => {
               const available = sizeHasStock(size);
               const isSelected = selectedSize === size;
@@ -103,7 +114,10 @@ export const ProductCard = ({ product, variants }: ProductCardProps) => {
                 <button
                   key={size}
                   type="button"
-                  onClick={() => setSelectedSize(size)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedSize(size);
+                  }}
                   disabled={!available}
                   className={cn(
                     "px-3 py-1.5 text-sm rounded border transition",
@@ -128,7 +142,11 @@ export const ProductCard = ({ product, variants }: ProductCardProps) => {
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
-        <Button className="w-full" onClick={handleAddToCart} disabled={selectedOut}>
+        <Button 
+          className="w-full" 
+          onClick={handleAddToCart} 
+          disabled={selectedOut}
+        >
           {selectedOut ? "Slut i lager" : "Lägg i kundvagn"}
         </Button>
       </CardFooter>

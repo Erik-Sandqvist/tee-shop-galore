@@ -44,7 +44,7 @@ export const Cart = () => {
       <div className="text-center py-8">
         <h1 className="text-3xl font-bold mb-4">Din kundvagn</h1>
         <p className="text-muted-foreground mb-4">Din kundvagn är tom</p>
-        <Link to="/products">
+        <Link to="/">
           <Button>Fortsätt handla</Button>
         </Link>
       </div>
@@ -124,7 +124,7 @@ export const Cart = () => {
                 <span>{getTotalPrice().toFixed(2)} kr</span>
               </div>
               <Button className="w-full" size="lg">Gå till kassan</Button>
-              <Link to="/products" className="block">
+              <Link to="/" className="block">
                 <Button variant="outline" className="w-full">Fortsätt handla</Button>
               </Link>
             </CardContent>
