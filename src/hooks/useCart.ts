@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { CartItem, ProductVariant } from '@/types';
+import { CartItem, ProductVariant, Product } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
 interface GuestCartItem {
   product_variant_id: string;
   quantity: number;
+  product_variants?: ProductVariant & { products?: Product };
 }
 
 export const useCart = () => {
@@ -15,22 +16,60 @@ export const useCart = () => {
   const { toast } = useToast();
 
   // --- Guest cart helpers ---
-  const loadGuestCart = () => {
+  const loadGuestCart = async () => {
     const stored = localStorage.getItem('guest_cart');
-    if (stored) setGuestCart(JSON.parse(stored));
+    if (!stored) {
+      setGuestCart([]);
+      return;
+    }
+
+    const guestItems: { product_variant_id: string; quantity: number }[] = JSON.parse(stored);
+    
+    if (guestItems.length === 0) {
+      setGuestCart([]);
+      return;
+    }
+
+    // Hämta produktinformation för guest cart items
+    const { data: variants } = await supabase
+      .from('product_variants')
+      .select(`
+        *,
+        products(*)
+      `)
+      .in('id', guestItems.map(i => i.product_variant_id));
+
+    if (variants) {
+      const enriched: GuestCartItem[] = guestItems.map(item => ({
+        product_variant_id: item.product_variant_id,
+        quantity: item.quantity,
+        product_variants: variants.find(v => v.id === item.product_variant_id)
+      }));
+      setGuestCart(enriched);
+    } else {
+      setGuestCart(guestItems);
+    }
   };
 
-  const saveGuestCart = (cart: GuestCartItem[]) => {
+  const saveGuestCart = (cart: { product_variant_id: string; quantity: number }[]) => {
     localStorage.setItem('guest_cart', JSON.stringify(cart));
-    setGuestCart(cart);
+    // Ladda om för att få produktinformation
+    loadGuestCart();
   };
 
-  const addToGuestCart = (product_variant_id: string, quantity = 1) => {
-    const index = guestCart.findIndex(i => i.product_variant_id === product_variant_id);
-    const newCart = [...guestCart];
-    if (index >= 0) newCart[index].quantity += quantity;
-    else newCart.push({ product_variant_id, quantity });
-    saveGuestCart(newCart);
+  const addToGuestCart = async (product_variant_id: string, quantity = 1) => {
+    const stored = localStorage.getItem('guest_cart');
+    const currentCart: { product_variant_id: string; quantity: number }[] = stored ? JSON.parse(stored) : [];
+    
+    const index = currentCart.findIndex(i => i.product_variant_id === product_variant_id);
+    
+    if (index >= 0) {
+      currentCart[index].quantity += quantity;
+    } else {
+      currentCart.push({ product_variant_id, quantity });
+    }
+    
+    saveGuestCart(currentCart);
     toast({ title: 'Lagt i kundvagn', description: 'Produkten har lagts till i din kundvagn.' });
   };
 
@@ -41,28 +80,56 @@ export const useCart = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setCartItems([]);
+        setLoading(false);
         return;
       }
 
       const { data, error } = await supabase
         .from('cart_items')
-        .select(`*, product_variants!inner(*, products!inner(*))`)
+        .select(`
+          *,
+          product_variants!inner(
+            *,
+            products!inner(*)
+          )
+        `)
         .eq('user_id', user.id);
 
       if (error) throw error;
       setCartItems(data || []);
 
       // Merge guest cart into user cart
-      if (guestCart.length > 0) {
-        const promises = guestCart.map(g =>
-          supabase.from('cart_items').upsert(
-            { user_id: user.id, product_variant_id: g.product_variant_id, quantity: g.quantity },
-            { onConflict: 'user_id,product_variant_id' }
-          )
-        );
-        await Promise.all(promises);
-        saveGuestCart([]);
-        await fetchCartItems();
+      const stored = localStorage.getItem('guest_cart');
+      if (stored) {
+        const guestItems: { product_variant_id: string; quantity: number }[] = JSON.parse(stored);
+        
+        if (guestItems.length > 0) {
+          const promises = guestItems.map(g => 
+            supabase.from('cart_items').upsert(
+              { 
+                user_id: user.id, 
+                product_variant_id: g.product_variant_id, 
+                quantity: g.quantity 
+              }, 
+              { onConflict: 'user_id,product_variant_id' }
+            )
+          );
+          await Promise.all(promises);
+          localStorage.removeItem('guest_cart');
+          setGuestCart([]);
+          // Reload merged cart
+          const { data: updatedData } = await supabase
+            .from('cart_items')
+            .select(`
+              *,
+              product_variants!inner(
+                *,
+                products!inner(*)
+              )
+            `)
+            .eq('user_id', user.id);
+          setCartItems(updatedData || []);
+        }
       }
     } catch (error) {
       console.error(error);
@@ -72,17 +139,21 @@ export const useCart = () => {
     }
   };
 
+  // --- Add / update / remove ---
   const addToCart = async (productVariantId: string, quantity = 1) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      addToGuestCart(productVariantId, quantity);
+      await addToGuestCart(productVariantId, quantity);
       return;
     }
 
     try {
       const { error } = await supabase
         .from('cart_items')
-        .upsert({ user_id: user.id, product_variant_id: productVariantId, quantity }, { onConflict: 'user_id,product_variant_id' });
+        .upsert(
+          { user_id: user.id, product_variant_id: productVariantId, quantity }, 
+          { onConflict: 'user_id,product_variant_id' }
+        );
       if (error) throw error;
       await fetchCartItems();
       toast({ title: 'Lagt i kundvagn', description: 'Produkten har lagts till i din kundvagn.' });
@@ -94,12 +165,25 @@ export const useCart = () => {
 
   const updateQuantity = async (cartItemId: string, quantity: number) => {
     const { data: { user } } = await supabase.auth.getUser();
+    
     if (!user) {
-      const updated = guestCart.map(i => i.product_variant_id === cartItemId ? { ...i, quantity } : i).filter(i => i.quantity > 0);
+      // För guest cart, använd product_variant_id
+      const stored = localStorage.getItem('guest_cart');
+      if (!stored) return;
+      
+      const currentCart: { product_variant_id: string; quantity: number }[] = JSON.parse(stored);
+      const updated = currentCart
+        .map(i => i.product_variant_id === cartItemId ? { ...i, quantity } : i)
+        .filter(i => i.quantity > 0);
+      
       saveGuestCart(updated);
       return;
     }
-    if (quantity <= 0) return removeFromCart(cartItemId);
+
+    if (quantity <= 0) {
+      await removeFromCart(cartItemId);
+      return;
+    }
 
     try {
       const { error } = await supabase.from('cart_items').update({ quantity }).eq('id', cartItemId);
@@ -113,8 +197,13 @@ export const useCart = () => {
 
   const removeFromCart = async (cartItemId: string) => {
     const { data: { user } } = await supabase.auth.getUser();
+    
     if (!user) {
-      saveGuestCart(guestCart.filter(i => i.product_variant_id !== cartItemId));
+      const stored = localStorage.getItem('guest_cart');
+      if (!stored) return;
+      
+      const currentCart: { product_variant_id: string; quantity: number }[] = JSON.parse(stored);
+      saveGuestCart(currentCart.filter(i => i.product_variant_id !== cartItemId));
       return;
     }
 
@@ -131,7 +220,8 @@ export const useCart = () => {
   const clearCart = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      saveGuestCart([]);
+      localStorage.removeItem('guest_cart');
+      setGuestCart([]);
       return;
     }
     try {
@@ -144,14 +234,18 @@ export const useCart = () => {
     }
   };
 
+  // --- Totals ---
   const getTotalPrice = () => {
     const guestTotal = guestCart.reduce((sum, item) => {
-      const variant = window['variants']?.find((v: ProductVariant & { products?: any }) => v.id === item.product_variant_id);
-      const price = variant?.products?.price || 0;
+      const price = item.product_variants?.products?.price || 0;
       return sum + price * item.quantity;
     }, 0);
 
-    const userTotal = cartItems.reduce((sum, item) => sum + (item.product_variants?.products?.price || 0) * item.quantity, 0);
+    const userTotal = cartItems.reduce((sum, item) => {
+      const price = item.product_variants?.products?.price || 0;
+      return sum + price * item.quantity;
+    }, 0);
+
     return userTotal + guestTotal;
   };
 
@@ -171,8 +265,8 @@ export const useCart = () => {
     guestCart,
     loading,
     addToCart,
-    updateQuantity,
     removeFromCart,
+    updateQuantity,
     clearCart,
     getTotalPrice,
     getTotalItems,

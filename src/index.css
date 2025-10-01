@@ -6,105 +6,89 @@
 
 @layer base {
   :root {
-    /* Global background and text */
-    --background: 210 30% 80%;      /* ljus, mild blåaktig vit */
-    --foreground: 222 15% 15%;      /* mörkgrå text för kontrast */
-    
-    /* Cards and popovers */
-    --card: 0 0% 100%;
-    --card-foreground: 222 15% 15%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 15% 15%;
-    
-    /* Primary colors */
-    --primary: 220 30% 56%;          /* klar blå */
-    --primary-foreground: 0 0% 100%; /* vit text på primär */
-    
-    --secondary: 330 60% 60%;        /* modern rosa/lila */
-    --secondary-foreground: 0 0% 100%;
-    
-    --muted: 210 20% 95%;            /* ljus neutral */
-    --muted-foreground: 222 10% 30%;
-    
-    --accent: 45 100% 55%;           /* varm gul/orange */
-    --accent-foreground: 222 15% 15%;
-    
-    --destructive: 0 70% 50%;        /* tydlig röd */
-    --destructive-foreground: 0 0% 100%;
-    
-    /* Borders, inputs, rings */
-    --border: 210 16% 85%;
-    --input: 210 16% 85%;
-    --ring: 220 90% 56%;
-    
-    /* Radius */
+    --background: #4f88c2;         /* 210 30% 80% */
+    --foreground: #22252b;         /* 222 15% 15% */
+  
+    --card: #ffffff;               /* 0 0% 100% */
+    --card-foreground: #22252b;    /* 222 15% 15% */
+    --popover: #ffffff;
+    --popover-foreground: #22252b;
+  
+    --primary: #5b83b9;            /* 220 30% 56% */
+    --primary-foreground: #ffffff; /* vit */
+  
+    --secondary: #d95c9c;          /* 330 60% 60% */
+    --secondary-foreground: #ffffff;
+              
+    --muted-foreground: #113d96;   /* 222 10% 30% */
+  
+    --accent: #f7b500;             /* 45 100% 55% */
+    --accent-foreground: #22252b;
+  
+    --destructive: #cc3333;        /* 0 70% 50% */
+    --destructive-foreground: #ffffff;
+  
+    --border: #d4dbe3;             /* 210 16% 85% */
+    --input: #d4dbe3;
+    --ring: #2979ff;               /* 220 90% 56% */
+  
     --radius: 0.5rem;
-    
-    /* Shop specific */
-    --shop-primary: 220 90% 56%;
-    --shop-primary-light: 220 90% 80%;
-    --shop-success: 142 70% 40%;
-    --shop-warning: 42 90% 55%;
-    --shop-error: 0 70% 50%;
-    
-    /* Sidebar */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 222 15% 15%;
-    --sidebar-primary: 220 90% 56%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 45 100% 55%;
-    --sidebar-accent-foreground: 222 15% 15%;
-    --sidebar-border: 210 16% 85%;
-    --sidebar-ring: 220 90% 56%;
+  
+    --shop-primary: #2979ff;       /* 220 90% 56% */
+    --shop-primary-light: #a7ffae; /* 220 90% 80% */
+    --shop-success: #1e8c4d;       /* 142 70% 40% */
+    --shop-warning: #ffb31a;       /* 42 90% 55% */
+    --shop-error: #cc3333;         /* 0 70% 50% */
+  
+    --sidebar-background: #fafafa; /* 0 0% 98% */
+    --sidebar-foreground: #22252b;
+    --sidebar-primary: #2979ff;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #f7b500;
+    --sidebar-accent-foreground: #22252b;
+    --sidebar-border: #d4dbe3;
+    --sidebar-ring: #2979ff;
   }
+  
 
   /* Dark mode overrides */
   .dark {
-    --background: 222 15% 10%;       /* mörkblå/svart bakgrund */
-    --foreground: 210 20% 95%;       /* ljus text */
-    
-    --card: 222 15% 20%;
-    --card-foreground: 210 20% 95%;
-    
-    --popover: 222 15% 20%;
-    --popover-foreground: 210 20% 95%;
-    
-    --primary: 220 90% 66%;          /* stark blå */
-    --primary-foreground: 0 0% 100%;
-    
-    --secondary: 330 60% 70%;        /* rosa/lila */
-    --secondary-foreground: 0 0% 100%;
-    
-    --muted: 222 10% 20%;
-    --muted-foreground: 210 20% 95%;
-    
-    --accent: 45 100% 65%;           /* ljus gul/orange */
-    --accent-foreground: 222 15% 10%;
-    
-    --destructive: 0 70% 60%;
-    --destructive-foreground: 0 0% 100%;
-    
-    --border: 222 10% 30%;
-    --input: 222 10% 30%;
-    --ring: 220 90% 66%;
-    
-    --sidebar-background: 222 15% 10%;
-    --sidebar-foreground: 210 20% 95%;
-    --sidebar-primary: 220 90% 66%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 45 100% 65%;
-    --sidebar-accent-foreground: 210 20% 95%;
-    --sidebar-border: 222 10% 30%;
-    --sidebar-ring: 220 90% 66%;
-  }
+    --background: #181a1e;         /* 222 15% 10% */
+    --foreground: #f2f5f7;         /* 210 20% 95% */
+  
+    --card: #2e3239;               /* 222 15% 20% */
+    --card-foreground: #f2f5f7;
+    --popover: #2e3239;
+    --popover-foreground: #f2f5f7;
+  
+    --primary: #4c9aff;            /* 220 90% 66% */
+    --primary-foreground: #ffffff;
+  
+    --secondary: #e080b6;          /* 330 60% 70% */
+    --secondary-foreground: #ffffff;
+  
+    --muted: #2e3239;              /* 222 10% 20% */
+    --muted-foreground: #f2f5f7;
+  
+    --accent: #ffd54d;             /* 45 100% 65% */
+    --accent-foreground: #181a1e;
+  
+    --destructive: #e64d4d;        /* 0 70% 60% */
+    --destructive-foreground: #ffffff;
+  
+    --border: #4a4f59;             /* 222 10% 30% */
+    --input: #4a4f59;
+    --ring: #4c9aff;
+  
+    --sidebar-background: #181a1e;
+    --sidebar-foreground: #f2f5f7;
+    --sidebar-primary: #4c9aff;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #ffd54d;
+    --sidebar-accent-foreground: #f2f5f7;
+    --sidebar-border: #4a4f59;
+    --sidebar-ring: #4c9aff;
+  }  
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
 
-  body {
-    @apply bg-background text-foreground;
-  }
-}
