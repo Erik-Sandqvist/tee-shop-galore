@@ -90,7 +90,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 to-accent/10 py-20">
+      <section className="bg-gradient-to-br from-primary to-accent/10 py-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-5xl font-bold mb-6 text-foreground">
             Eriks Store

@@ -18,12 +18,11 @@ export default {
     },
     extend: {
       colors: {
-        background: "#c6d3e0",   
+        background: "#62a9f0",   
         foreground: "#22252b",   // mörk text
 
         primary: {
-          DEFAULT: "#5b83b9",    // blå
-          foreground: "#ffffff",
+          DEFAULT: "#1564cf",    // blå
         },
         secondary: {
           DEFAULT: "#d95c9c",    // rosa/lila
@@ -38,8 +37,8 @@ export default {
           foreground: "#4a4f59",
         },
         accent: {
-          DEFAULT: "#f7b500",    // gul/orange
-          foreground: "#22252b",
+          DEFAULT: "#f7b500",    
+          foreground: "#121f3b",
         },
         popover: {
           DEFAULT: "#ffffff",

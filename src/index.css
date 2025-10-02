@@ -2,11 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Modern design system with HSL colors */
-
 @layer base {
   :root {
-    --background: #4f88c2;         /* 210 30% 80% */
+    --background: #1e4469;         /* 210 30% 80% */
     --foreground: #22252b;         /* 222 15% 15% */
   
     --card: #ffffff;               /* 0 0% 100% */
