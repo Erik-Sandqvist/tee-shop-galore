@@ -18,7 +18,7 @@ export default {
     },
     extend: {
       colors: {
-        background: "#62a9f0",   
+        background: "#b0b8bf",   
         foreground: "#22252b",   // mörk text
 
         primary: {
