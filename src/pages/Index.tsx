@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
@@ -90,7 +91,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary to-accent/10 py-20">
+      <section className="bg-gradient-to-br from-primary to-background py-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-5xl font-bold mb-6 text-foreground">
             Eriks Store
@@ -120,40 +121,14 @@ const Index = () => {
           <h2 className="text-3xl font-bold text-center mb-12">Produkter</h2>
           <FeaturedProducts />
           <div className="text-center mt-10">
-            <Button asChild variant="outline">
+            {/* <Button asChild variant="outline">
               <Link to="/products">Visa alla</Link>
-            </Button>
+            </Button> */}
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="bg-muted/30 py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-3xl mb-4">🚚</div>
-              <h3 className="font-semibold mb-2">Free Shipping</h3>
-              <p className="text-sm text-muted-foreground">On orders over $50</p>
-            </div>
-            <div>
-              <div className="text-3xl mb-4">↩️</div>
-              <h3 className="font-semibold mb-2">Easy Returns</h3>
-              <p className="text-sm text-muted-foreground">30-day return policy</p>
-            </div>
-            <div>
-              <div className="text-3xl mb-4">🌟</div>
-              <h3 className="font-semibold mb-2">Quality Guarantee</h3>
-              <p className="text-sm text-muted-foreground">Premium materials only</p>
-            </div>
-            <div>
-              <div className="text-3xl mb-4">💬</div>
-              <h3 className="font-semibold mb-2">24/7 Support</h3>
-              <p className="text-sm text-muted-foreground">Always here to help</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <Footer />
     </div>
   );
 };
