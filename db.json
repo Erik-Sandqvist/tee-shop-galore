@@ -1,0 +1,60 @@
+{
+    "products": [
+      {
+        "id": "1",
+        "name": "Basic T-shirt",
+        "description": "Comfortable cotton t-shirt",
+        "price": 19.99,
+        "category_id": "clothing",
+        "image_url": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&auto=format",
+        "is_active": true,
+        "created_at": "2023-01-01T12:00:00Z",
+        "updated_at": "2023-01-01T12:00:00Z"
+      },
+      {
+        "id": "2",
+        "name": "Denim Jeans",
+        "description": "Classic blue jeans",
+        "price": 49.99,
+        "category_id": "clothing",
+        "image_url": "https://images.unsplash.com/photo-1542272604-787c3835535d?w=500&auto=format",
+        "is_active": true,
+        "created_at": "2023-01-02T12:00:00Z",
+        "updated_at": "2023-01-02T12:00:00Z"
+      }
+    ],
+    "variants": [
+      {
+        "id": "101",
+        "product_id": "1",
+        "color": "Black",
+        "size": "M",
+        "stock_quantity": 25,
+        "created_at": "2023-01-01T12:00:00Z"
+      },
+      {
+        "id": "102",
+        "product_id": "1",
+        "color": "White",
+        "size": "M",
+        "stock_quantity": 30,
+        "created_at": "2023-01-01T12:00:00Z"
+      },
+      {
+        "id": "103",
+        "product_id": "2",
+        "color": "Blue",
+        "size": "32",
+        "stock_quantity": 15,
+        "created_at": "2023-01-02T12:00:00Z"
+      }
+    ],
+    "categories": [
+      {
+        "id": "clothing",
+        "name": "Clothing",
+        "description": "Apparel and clothing items",
+        "created_at": "2023-01-01T00:00:00Z"
+      }
+    ]
+  }
