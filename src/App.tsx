@@ -10,7 +10,12 @@ import { Cart } from "./pages/Cart";
 import { Auth } from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { Header } from "./components/Header";
-import { CartProvider } from '@/context/CartContext'
+import { CartProvider } from '@/context/CartContext';
+
+// Import Admin components
+import { ProductsAdmin } from "./pages/admin/Products";
+import { AdminLayout } from "./components/admin/AdminLayout";
+import { Dashboard } from "./pages/admin/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -21,21 +26,61 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <CartProvider>
-          <Header />
+          {/* Routes will determine whether to show Header or not */}
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/products/:id" element={<ProductDetail />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
+            {/* Admin routes - no Header */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="products" element={<ProductsAdmin />} />
+              {/* Add more admin routes as needed */}
+              {/* <Route path="orders" element={<OrdersAdmin />} /> */}
+              {/* <Route path="settings" element={<SettingsAdmin />} /> */}
+            </Route>
+            
+            {/* Public routes with Header */}
+            <Route path="/" element={
+              <>
+                <Header />
+                <Index />
+              </>
+            } />
+            <Route path="/products" element={
+              <>
+                <Header />
+                <Products />
+              </>
+            } />
+            <Route path="/products/:id" element={
+              <>
+                <Header />
+                <ProductDetail />
+              </>
+            } />
+            <Route path="/cart" element={
+              <>
+                <Header />
+                <Cart />
+              </>
+            } />
+            <Route path="/auth" element={
+              <>
+                <Header />
+                <Auth />
+              </>
+            } />
+            
+            {/* Catch-all route */}
+            <Route path="*" element={
+              <>
+                <Header />
+                <NotFound />
+              </>
+            } />
           </Routes>
-        </CartProvider> {/* ✅ Här stänger du CartProvider */}
+        </CartProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );
-
 
 export default App;
