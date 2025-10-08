@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useCart } from '@/hooks/useCart';
+// import { useCart } from '@/hooks/useCart';
+import { useCart } from '@/context/CartContext';
 import { Product, ProductVariant } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, ShoppingCart, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -120,23 +120,40 @@ export const ProductDetail = () => {
   const allColors = [...new Set(variants.map(v => v.color).filter(Boolean))] as string[];
 
   // Hitta vald variant
-  const selectedVariant = variants.find(
-    v => v.size === selectedSize && v.color === selectedColor
-  );
+  let selectedVariant: ProductVariant | undefined;
+
+  // Om både storlek och färg är valda, försök hitta exakt matchning
+  if (selectedSize && selectedColor) {
+    selectedVariant = variants.find(
+      v => v.size === selectedSize && v.color === selectedColor
+    );
+  } 
+  // Om bara storlek är vald (inga färger finns)
+  else if (selectedSize && allColors.length === 0) {
+    selectedVariant = variants.find(v => v.size === selectedSize);
+  }
+  // Om bara färg är vald (inga storlekar finns)
+  else if (selectedColor && allSizes.length === 0) {
+    selectedVariant = variants.find(v => v.color === selectedColor);
+  }
+  // Om varken storlek eller färg finns (bara en variant)
+  else if (allSizes.length === 0 && allColors.length === 0) {
+    selectedVariant = variants[0];
+  }
 
   const selectedStock = selectedVariant ? getStock(selectedVariant) : 0;
   const canAddToCart = selectedVariant && selectedStock > 0;
 
   // Kolla vilka storlekar/färger som finns i lager
   const sizeHasStock = (size: string) => {
-    if (selectedColor) {
+    if (selectedColor && allColors.length > 0) {
       return variants.some(v => v.size === size && v.color === selectedColor && getStock(v) > 0);
     }
     return variants.some(v => v.size === size && getStock(v) > 0);
   };
 
   const colorHasStock = (color: string) => {
-    if (selectedSize) {
+    if (selectedSize && allSizes.length > 0) {
       return variants.some(v => v.color === color && v.size === selectedSize && getStock(v) > 0);
     }
     return variants.some(v => v.color === color && getStock(v) > 0);
@@ -148,6 +165,54 @@ export const ProductDetail = () => {
     setAddingToCart(true);
     await addToCart(selectedVariant.id);
     setAddingToCart(false);
+  };
+
+  // Hantera storleksändring - auto-välj första tillgängliga färg för den storleken
+  const handleSizeChange = (size: string) => {
+    setSelectedSize(size);
+    
+    if (allColors.length > 0) {
+      // Hitta första färgen som finns i lager för denna storlek
+      const availableColor = allColors.find(color => 
+        variants.some(v => v.size === size && v.color === color && getStock(v) > 0)
+      );
+      
+      if (availableColor) {
+        setSelectedColor(availableColor);
+      } else {
+        // Om ingen färg finns i lager, välj första tillgängliga färg ändå
+        const anyColor = allColors.find(color =>
+          variants.some(v => v.size === size && v.color === color)
+        );
+        if (anyColor) {
+          setSelectedColor(anyColor);
+        }
+      }
+    }
+  };
+
+  // Hantera färgändring - auto-välj första tillgängliga storlek för den färgen
+  const handleColorChange = (color: string) => {
+    setSelectedColor(color);
+    
+    if (allSizes.length > 0) {
+      // Hitta första storleken som finns i lager för denna färg
+      const availableSize = orderedSizes.find(size =>
+        variants.some(v => v.color === color && v.size === size && getStock(v) > 0)
+      );
+      
+      if (availableSize) {
+        setSelectedSize(availableSize);
+      } else {
+        // Om ingen storlek finns i lager, välj första tillgängliga storlek ändå
+        const anySize = orderedSizes.find(size =>
+          variants.some(v => v.color === color && v.size === size)
+        );
+        if (anySize) {
+          setSelectedSize(anySize);
+        }
+      }
+    }
   };
 
   return (
@@ -181,7 +246,7 @@ export const ProductDetail = () => {
 
           {product.description && (
             <>
-              <Separator />
+              <div className="border-t my-6" />
               <div>
                 <h3 className="font-semibold mb-2">Beskrivning</h3>
                 <p className="text-muted-foreground">{product.description}</p>
@@ -189,7 +254,7 @@ export const ProductDetail = () => {
             </>
           )}
 
-          <Separator />
+          <div className="border-t my-6" />
 
           {/* Färgval */}
           {allColors.length > 0 && (
@@ -202,7 +267,7 @@ export const ProductDetail = () => {
                   return (
                     <button
                       key={color}
-                      onClick={() => setSelectedColor(color)}
+                      onClick={() => handleColorChange(color)}
                       disabled={!available}
                       className={cn(
                         'px-4 py-2 rounded-md border transition',
@@ -231,7 +296,7 @@ export const ProductDetail = () => {
                   return (
                     <button
                       key={size}
-                      onClick={() => setSelectedSize(size)}
+                      onClick={() => handleSizeChange(size)}
                       disabled={!available}
                       className={cn(
                         'px-4 py-2 rounded-md border transition min-w-[60px]',
@@ -256,9 +321,13 @@ export const ProductDetail = () => {
                 <Check className="mr-1 h-3 w-3" />
                 {selectedStock} st i lager
               </Badge>
-            ) : (
+            ) : selectedVariant ? (
               <Badge variant="outline" className="text-red-600 border-red-600">
                 Slut i lager
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-yellow-600 border-yellow-600">
+                Välj storlek och färg
               </Badge>
             )}
           </div>
@@ -277,6 +346,8 @@ export const ProductDetail = () => {
                 <ShoppingCart className="mr-2 h-5 w-5" />
                 Lägg i kundvagn
               </>
+            ) : !selectedVariant ? (
+              'Välj storlek och färg'
             ) : (
               'Slut i lager'
             )}

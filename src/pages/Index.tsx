@@ -94,23 +94,22 @@ const Index = () => {
       <section className="bg-gradient-to-br from-primary to-background py-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-5xl font-bold mb-6 text-foreground">
-            Eriks Store
+            Nohamma
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Discover our collection of high-quality, comfortable t-shirts in various colors and sizes. 
-            Perfect for everyday wear or special occasions.
+            En butik som är till för norrahammarsborna att kunna utrycka sin kärlek till Nohamma
           </p>
           <div className="space-x-4">
             <Link to="/products">
               <Button size="lg" className="px-8">
-                Shop Now
+                Handla nu
               </Button>
             </Link>
-            <Link to="/products">
+            {/* <Link to="/products">
               <Button variant="outline" size="lg" className="px-8">
                 View Collection
               </Button>
-            </Link>
+            </Link> */}
           </div>
         </div>
       </section>

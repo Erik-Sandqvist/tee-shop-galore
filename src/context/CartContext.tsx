@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { CartItem, ProductVariant, Product } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -9,7 +9,22 @@ interface GuestCartItem {
   product_variants?: ProductVariant & { products?: Product };
 }
 
-export const useCart = () => {
+interface CartContextType {
+  cartItems: CartItem[];
+  guestCart: GuestCartItem[];
+  loading: boolean;
+  addToCart: (productVariantId: string, quantity?: number) => Promise<void>;
+  removeFromCart: (cartItemId: string) => Promise<void>;
+  updateQuantity: (cartItemId: string, quantity: number) => Promise<void>;
+  clearCart: () => Promise<void>;
+  getTotalPrice: () => number;
+  getTotalItems: () => number;
+  fetchCartItems: () => Promise<void>;
+}
+
+const CartContext = createContext<CartContextType | undefined>(undefined);
+
+export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [guestCart, setGuestCart] = useState<GuestCartItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -53,7 +68,6 @@ export const useCart = () => {
 
   const saveGuestCart = (cart: { product_variant_id: string; quantity: number }[]) => {
     localStorage.setItem('guest_cart', JSON.stringify(cart));
-    // Ladda om för att få produktinformation
     loadGuestCart();
   };
 
@@ -117,7 +131,7 @@ export const useCart = () => {
           await Promise.all(promises);
           localStorage.removeItem('guest_cart');
           setGuestCart([]);
-          // Reload merged cart
+          
           const { data: updatedData } = await supabase
             .from('cart_items')
             .select(`
@@ -167,7 +181,6 @@ export const useCart = () => {
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
-      // För guest cart, använd product_variant_id
       const stored = localStorage.getItem('guest_cart');
       if (!stored) return;
       
@@ -260,16 +273,30 @@ export const useCart = () => {
     fetchCartItems();
   }, []);
 
-  return {
-    cartItems,
-    guestCart,
-    loading,
-    addToCart,
-    removeFromCart,
-    updateQuantity,
-    clearCart,
-    getTotalPrice,
-    getTotalItems,
-    fetchCartItems,
-  };
+  return (
+    <CartContext.Provider
+      value={{
+        cartItems,
+        guestCart,
+        loading,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+        getTotalPrice,
+        getTotalItems,
+        fetchCartItems,
+      }}
+    >
+      {children}
+    </CartContext.Provider>
+  );
+};
+
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (context === undefined) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
+  return context;
 };
