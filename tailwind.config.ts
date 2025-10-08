@@ -18,11 +18,11 @@ export default {
     },
     extend: {
       colors: {
-        background: "#b0b8bf",   
+        background: "#f5f6f7",   
         foreground: "#22252b",   // mörk text
 
         primary: {
-          DEFAULT: "#1564cf",    // blå
+          DEFAULT: "#cfb408",    // blå
         },
         secondary: {
           DEFAULT: "#d95c9c",    // rosa/lila
