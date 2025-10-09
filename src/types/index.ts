@@ -38,6 +38,14 @@ export interface CartItem {
   };
 }
 
+export interface GuestCartItem {
+  product_variant_id: string;
+  quantity: number;
+  product_variants?: ProductVariant & {
+    products?: Product;
+  };
+}
+
 export interface Order {
   id: string;
   user_id: string;
@@ -46,4 +54,16 @@ export interface Order {
   shipping_address?: any;
   created_at: string;
   updated_at: string;
+}
+
+export interface CartContextType {
+  cartItems: CartItem[];
+  guestCart: GuestCartItem[];
+  addToCart: (variantId: string, quantity: number, product?: Product, variant?: ProductVariant) => Promise<void>;
+  removeFromCart: (variantId: string) => Promise<void>;
+  updateQuantity: (variantId: string, quantity: number) => Promise<void>;
+  getTotalPrice: () => number;
+  getTotalItems: () => number; // Add this line
+  loading: boolean;
+  clearCart: () => Promise<void>;
 }

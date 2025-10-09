@@ -1,5 +1,6 @@
 // import { useCart } from '@/hooks/useCart';
 import { useCart } from '@/context/CartContext';
+import { Checkout } from './Checkout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +8,7 @@ import { Minus, Plus, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { ProductVariant, Product } from '@/types';
+
 
 interface CombinedCartItem {
   id: string;
@@ -35,6 +37,8 @@ export const Cart = () => {
 
     setCombinedCart([...mappedUser, ...mappedGuest]);
   }, [cartItems, guestCart]);
+
+  
 
   if (loading) {
     return <div className="text-center py-8">Laddar kundvagn...</div>;
@@ -124,8 +128,10 @@ export const Cart = () => {
                 <span>Totalt:</span>
                 <span>{getTotalPrice().toFixed(2)} kr</span>
               </div>
+              <Link to="/checkout" className="block">
               <Button className="w-full" size="lg">Gå till kassan</Button>
-              <Link to="/" className="block">
+              </Link>
+              <Link to="" className="block">
                 <Button variant="outline" className="w-full">Fortsätt handla</Button>
               </Link>
             </CardContent>
