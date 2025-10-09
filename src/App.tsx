@@ -11,6 +11,9 @@ import { Auth } from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { Header } from "./components/Header";
 import { CartProvider } from '@/context/CartContext';
+import { Checkout } from './pages/Checkout';
+import { CheckoutSuccess } from './pages/CheckoutSuccess';
+
 
 // Import Admin components
 import { ProductsAdmin } from "./pages/admin/Products";
@@ -66,6 +69,20 @@ const App = () => (
               <>
                 <Header />
                 <Auth />
+              </>
+            } />
+
+              {/* Add checkout routes */}
+              <Route path="/checkout" element={
+              <>
+                <Header />
+                <Checkout />
+              </>
+            } />
+            <Route path="/checkout/success" element={
+              <>
+                <Header />
+                <CheckoutSuccess />
               </>
             } />
             

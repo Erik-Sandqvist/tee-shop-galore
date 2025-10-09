@@ -163,7 +163,7 @@ export const ProductDetail = () => {
     if (!selectedVariant || selectedStock === 0) return;
     
     setAddingToCart(true);
-    await addToCart(selectedVariant.id);
+    await addToCart(selectedVariant.id, 1); // Assuming a default quantity of 1
     setAddingToCart(false);
   };
 
