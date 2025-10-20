@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Product, ProductVariant, CartItem, GuestCartItem, CartContextType } from '@/types';
+import { useToast } from '@/components/ui/use-toast';
 
 // Create the context with the proper type
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -9,6 +10,53 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [guestCart, setGuestCart] = useState<GuestCartItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  // Add function to check available stock
+  const getAvailableStock = async (variantId: string): Promise<number> => {
+    try {
+      const { data, error } = await supabase
+        .from('product_variants')
+        .select('stock_quantity')
+        .eq('id', variantId)
+        .single();
+
+      if (error) throw error;
+      return data?.stock_quantity || 0;
+    } catch (error) {
+      console.error('Error fetching stock:', error);
+      return 0;
+    }
+  };
+
+  // Get current quantity in cart for a variant
+  const getCurrentCartQuantity = (variantId: string): number => {
+    // Check user cart
+    const userCartItem = cartItems.find(item => item.product_variant_id === variantId);
+    const userQuantity = userCartItem?.quantity || 0;
+
+    // Check guest cart
+    const guestCartItem = guestCart.find(item => item.product_variant_id === variantId);
+    const guestQuantity = guestCartItem?.quantity || 0;
+
+    return userQuantity + guestQuantity;
+  };
+
+  // Validate if we can add more items to cart
+  const validateStock = async (
+    variantId: string, 
+    quantityToAdd: number
+  ): Promise<{ canAdd: boolean; availableStock: number; currentInCart: number }> => {
+    const availableStock = await getAvailableStock(variantId);
+    const currentInCart = getCurrentCartQuantity(variantId);
+    const totalAfterAdd = currentInCart + quantityToAdd;
+
+    return {
+      canAdd: totalAfterAdd <= availableStock,
+      availableStock,
+      currentInCart,
+    };
+  };
 
   // --- Guest cart helpers ---
   const loadGuestCart = async () => {
@@ -52,6 +100,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addToGuestCart = async (product_variant_id: string, quantity = 1) => {
+    // Validate stock before adding
+    const validation = await validateStock(product_variant_id, quantity);
+    
+    if (!validation.canAdd) {
+      toast({
+        title: "Insufficient Stock",
+        description: `Only ${validation.availableStock - validation.currentInCart} more items available in stock.`,
+        variant: "destructive",
+      });
+      return false;
+    }
+
     const stored = localStorage.getItem('guestCart');
     const currentCart: { product_variant_id: string; quantity: number }[] = stored ? JSON.parse(stored) : [];
     
@@ -64,6 +124,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
     
     saveGuestCart(currentCart);
+    return true;
   };
 
   // --- Fetch user cart ---
@@ -134,20 +195,38 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   // --- Add / update / remove ---
   const addToCart = async (
     variantId: string, 
-    quantity: number = 1, // Default to 1 if not provided
+    quantity: number = 1,
     product?: Product, 
     variant?: ProductVariant
   ) => {
     try {
-      // Check for valid quantity
       if (!quantity || quantity <= 0) {
-        quantity = 1; // Ensure quantity is at least 1
+        quantity = 1;
+      }
+
+      // Validate stock before adding
+      const validation = await validateStock(variantId, quantity);
+      
+      if (!validation.canAdd) {
+        const productName = product?.name || 'Product';
+        toast({
+          title: "Insufficient Stock",
+          description: `Cannot add ${quantity} more ${productName}. Only ${validation.availableStock - validation.currentInCart} available (${validation.currentInCart} already in cart).`,
+          variant: "destructive",
+        });
+        return false;
       }
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        await addToGuestCart(variantId, quantity);
-        return;
+        const success = await addToGuestCart(variantId, quantity);
+        if (success) {
+          toast({
+            title: "Added to Cart",
+            description: `${product?.name || 'Product'} has been added to your cart.`,
+          });
+        }
+        return success;
       }
 
       try {
@@ -159,27 +238,52 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           );
         if (error) throw error;
         await fetchCartItems();
+        
+        toast({
+          title: "Added to Cart",
+          description: `${product?.name || 'Product'} has been added to your cart.`,
+        });
+        return true;
       } catch (error) {
         console.error(error);
+        return false;
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
+      return false;
     }
   };
 
-  const updateQuantity = async (variantId: string, quantity: number = 1) => {
+  const updateQuantity = async (variantId: string, quantity: number = 1): Promise<boolean> => {
     try {
-      // Ensure quantity is valid
       if (quantity <= 0) {
-        // If quantity is 0 or negative, remove the item instead
-        return await removeFromCart(variantId);
+        await removeFromCart(variantId);
+        return true; // Add explicit return
+      }
+
+      // Get current quantity in cart
+      const currentInCart = getCurrentCartQuantity(variantId);
+      const difference = quantity - currentInCart;
+
+      // Only validate if increasing quantity
+      if (difference > 0) {
+        const validation = await validateStock(variantId, difference);
+        
+        if (!validation.canAdd) {
+          toast({
+            title: "Insufficient Stock",
+            description: `Only ${validation.availableStock} items available in stock.`,
+            variant: "destructive",
+          });
+          return false;
+        }
       }
 
       const { data: { user } } = await supabase.auth.getUser();
     
       if (!user) {
         const stored = localStorage.getItem('guestCart');
-        if (!stored) return;
+        if (!stored) return false;
         
         const currentCart: { product_variant_id: string; quantity: number }[] = JSON.parse(stored);
         const updated = currentCart
@@ -187,23 +291,21 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           .filter(i => i.quantity > 0);
         
         saveGuestCart(updated);
-        return;
-      }
-
-      if (quantity <= 0) {
-        await removeFromCart(variantId);
-        return;
+        return true;
       }
 
       try {
         const { error } = await supabase.from('cart_items').update({ quantity }).eq('id', variantId);
         if (error) throw error;
         await fetchCartItems();
+        return true;
       } catch (error) {
         console.error(error);
+        return false;
       }
     } catch (error) {
       console.error('Error updating quantity:', error);
+      return false;
     }
   };
 
@@ -230,8 +332,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const clearCart = async () => {
     try {
-      // Clear user cart if logged in
-      const { data: { user } } = await supabase.auth.getSession();
+      const { data } = await supabase.auth.getSession();
+      const user = data.session?.user;
+      
       if (user) {
         await supabase
           .from('cart_items')
@@ -239,10 +342,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           .eq('user_id', user.id);
       }
       
-      // Clear guest cart in local storage
       localStorage.removeItem('guestCart');
-      
-      // Update state
       setCartItems([]);
       setGuestCart([]);
     } catch (error) {
@@ -286,6 +386,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     getTotalItems,
     loading,
     clearCart,
+    getAvailableStock, // Export this function
+    getCurrentCartQuantity, // Export this function
   };
 
   return <CartContext.Provider value={contextValue}>{children}</CartContext.Provider>;
