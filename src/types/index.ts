@@ -56,14 +56,17 @@ export interface Order {
   updated_at: string;
 }
 
+// src/types/index.ts
 export interface CartContextType {
   cartItems: CartItem[];
   guestCart: GuestCartItem[];
-  addToCart: (variantId: string, quantity: number, product?: Product, variant?: ProductVariant) => Promise<void>;
+  addToCart: (variantId: string, quantity?: number, product?: Product, variant?: ProductVariant) => Promise<boolean>; // Changed to return boolean and quantity is optional
   removeFromCart: (variantId: string) => Promise<void>;
-  updateQuantity: (variantId: string, quantity: number) => Promise<void>;
+  updateQuantity: (variantId: string, quantity: number) => Promise<boolean>; // Changed to return boolean
   getTotalPrice: () => number;
-  getTotalItems: () => number; // Add this line
+  getTotalItems: () => number;
   loading: boolean;
   clearCart: () => Promise<void>;
+  getAvailableStock: (variantId: string) => Promise<number>; // Add this
+  getCurrentCartQuantity: (variantId: string) => number; // Add this
 }

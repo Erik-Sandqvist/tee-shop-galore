@@ -131,7 +131,7 @@ export const Cart = () => {
               <Link to="/checkout" className="block">
               <Button className="w-full" size="lg">Gå till kassan</Button>
               </Link>
-              <Link to="" className="block">
+              <Link to="/" className="block">
                 <Button variant="outline" className="w-full">Fortsätt handla</Button>
               </Link>
             </CardContent>
