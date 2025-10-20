@@ -93,7 +93,7 @@ const Index = () => {
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-primary to-background py-20">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl font-bold mb-6 text-foreground">
+          <h1 className="text-5xl font-bold mb-6 mt-6 text-foreground">
             Nohamma
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
