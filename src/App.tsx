@@ -8,6 +8,8 @@ import { Products } from "./pages/Products";
 import { ProductDetail } from "./pages/ProductDetail";
 import { Cart } from "./pages/Cart";
 import { Auth } from "./pages/Auth";
+import { About } from "./pages/About";
+import { Layout } from "./components/Layout";
 import NotFound from "./pages/NotFound";
 import { Header } from "./components/Header";
 import { CartProvider } from '@/context/CartContext';
@@ -41,58 +43,15 @@ const App = () => (
             </Route>
             
             {/* Public routes with Header */}
-            <Route path="/" element={
-              <>
-                <Header />
-                <Index />
-              </>
-            } />
-            <Route path="/products" element={
-              <>
-                <Header />
-                <Products />
-              </>
-            } />
-            <Route path="/products/:id" element={
-              <>
-                <Header />
-                <ProductDetail />
-              </>
-            } />
-            <Route path="/cart" element={
-              <>
-                <Header />
-                <Cart />
-              </>
-            } />
-            <Route path="/auth" element={
-              <>
-                <Header />
-                <Auth />
-              </>
-            } />
-
-              {/* Add checkout routes */}
-              <Route path="/checkout" element={
-              <>
-                <Header />
-                <Checkout />
-              </>
-            } />
-            <Route path="/checkout/success" element={
-              <>
-                <Header />
-                <CheckoutSuccess />
-              </>
-            } />
-            
-            {/* Catch-all route */}
-            <Route path="*" element={
-              <>
-                <Header />
-                <NotFound />
-              </>
-            } />
+            <Route path="/" element={<Layout><Index /></Layout>} />
+            <Route path="/products" element={<Layout><Products /></Layout>} />
+            <Route path="/about" element={<Layout><About /></Layout>} />
+            <Route path="/products/:id" element={<Layout><ProductDetail /></Layout>} />
+            <Route path="/cart" element={<Layout><Cart /></Layout>} />
+            <Route path="/auth" element={<Layout><Auth /></Layout>} />
+            <Route path="/checkout" element={<Layout><Checkout /></Layout>} />
+            <Route path="/checkout/success" element={<Layout><CheckoutSuccess /></Layout>} />
+            <Route path="*" element={<Layout><NotFound /></Layout>} />
           </Routes>
         </CartProvider>
       </BrowserRouter>

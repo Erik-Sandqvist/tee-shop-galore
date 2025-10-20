@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 
 export const Footer = () => (
@@ -15,11 +16,13 @@ export const Footer = () => (
       <h3 className="font-semibold mb-2">Easy Returns</h3>
       <p className="text-sm text-muted-foreground">30-day return policy</p>
     </div>
+    <Link to="/about">
     <div>
       <div className="text-3xl mb-4">🌟</div>
       <h3 className="font-semibold mb-2">Om Butiken</h3>
       <p className="text-sm text-muted-foreground">Premium materials only</p>
     </div>
+    </Link>
     <div>
       <div className="text-3xl mb-4">💬</div>
       <h3 className="font-semibold mb-2">24/7 Support</h3>
