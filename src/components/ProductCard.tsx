@@ -71,7 +71,7 @@ export const ProductCard = ({ product, variants }: ProductCardProps) => {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation(); // Förhindra navigation när man klickar på knappen
     if (selectedVariant && getStock(selectedVariant) > 0) {
-      addToCart(selectedVariant.id);
+      addToCart(selectedVariant.id, 1); // Default quantity set to 1
     }
   };
 
