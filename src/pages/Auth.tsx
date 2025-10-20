@@ -84,9 +84,6 @@ export const Auth = () => {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Välkommen till TeeShop</CardTitle>
-          <CardDescription>
-            Logga in på ditt konto eller skapa ett nytt. OBS: Du måste bekräfta din e-post innan du kan logga in.
-          </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
