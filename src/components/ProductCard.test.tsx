@@ -109,14 +109,6 @@ describe('ProductCard', () => {
     expect(screen.getByText('299 kr')).toBeInTheDocument();
   });
 
-//   it('should display product image', () => {
-//     renderProductCard();
-    
-//     const image = screen.getByAlt('Test T-Shirt') as HTMLImageElement;
-//     expect(image).toBeInTheDocument();
-//     expect(image.src).toContain('example.com/image.jpg');
-//   });
-
   it('should show all available sizes', () => {
     renderProductCard();
     
@@ -165,7 +157,7 @@ describe('ProductCard', () => {
     expect(button).not.toBeDisabled();
   });
 
-  it('should show "Slut i lager" when all variants are out of stock', () => {
+  it('should show "Slut i lager" badge when all variants are out of stock', () => {
     const outOfStockVariants = mockVariants.map(v => ({
       ...v,
       stock_quantity: 0,
@@ -179,6 +171,14 @@ describe('ProductCard', () => {
       </BrowserRouter>
     );
     
-    expect(screen.getByText(/slut i lager/i)).toBeInTheDocument();
+    // Kolla att badge visas på bilden
+    const badge = screen.getByText('Slut i lager', { 
+      selector: '.absolute.top-2.left-2' 
+    });
+    expect(badge).toBeInTheDocument();
+    
+    // Kolla att knappen är disabled
+    const button = screen.getByRole('button', { name: /slut i lager/i });
+    expect(button).toBeDisabled();
   });
 });

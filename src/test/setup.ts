@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { afterEach, vi } from 'vitest';
+import { afterEach, vi, beforeAll } from 'vitest';
 import { cleanup } from '@testing-library/react';
 
 // Cleanup efter varje test
@@ -30,4 +30,32 @@ const localStorageMock = (() => {
 
 Object.defineProperty(global, 'localStorage', {
   value: localStorageMock,
+});
+
+// Tysta konsol-varningar i tester (optional)
+beforeAll(() => {
+  // Tysta React Router warnings
+  const originalError = console.error;
+  const originalWarn = console.warn;
+  
+  console.error = (...args: any[]) => {
+    if (
+      typeof args[0] === 'string' &&
+      (args[0].includes('React Router Future Flag Warning') ||
+       args[0].includes('Not implemented: HTMLFormElement.prototype.requestSubmit'))
+    ) {
+      return;
+    }
+    originalError.call(console, ...args);
+  };
+
+  console.warn = (...args: any[]) => {
+    if (
+      typeof args[0] === 'string' &&
+      args[0].includes('React Router Future Flag Warning')
+    ) {
+      return;
+    }
+    originalWarn.call(console, ...args);
+  };
 });
