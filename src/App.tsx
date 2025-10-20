@@ -8,6 +8,7 @@ import { Products } from "./pages/Products";
 import { ProductDetail } from "./pages/ProductDetail";
 import { Cart } from "./pages/Cart";
 import { Auth } from "./pages/Auth";
+import { About } from "./pages/About";
 import { Layout } from "./components/Layout";
 import NotFound from "./pages/NotFound";
 import { Header } from "./components/Header";
@@ -44,6 +45,7 @@ const App = () => (
             {/* Public routes with Header */}
             <Route path="/" element={<Layout><Index /></Layout>} />
             <Route path="/products" element={<Layout><Products /></Layout>} />
+            <Route path="/about" element={<Layout><About /></Layout>} />
             <Route path="/products/:id" element={<Layout><ProductDetail /></Layout>} />
             <Route path="/cart" element={<Layout><Cart /></Layout>} />
             <Route path="/auth" element={<Layout><Auth /></Layout>} />
