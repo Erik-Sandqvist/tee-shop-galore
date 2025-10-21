@@ -1,14 +1,11 @@
-// import { useCart } from '@/hooks/useCart';
 import { useCart } from '@/context/CartContext';
-import { Checkout } from './Checkout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Minus, Plus, Trash2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Minus, Plus, Trash2, ShoppingCart } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { ProductVariant, Product } from '@/types';
-
 
 interface CombinedCartItem {
   id: string;
@@ -20,9 +17,9 @@ interface CombinedCartItem {
 export const Cart = () => {
   const { cartItems, guestCart, updateQuantity, removeFromCart, getTotalPrice, loading } = useCart();
   const [combinedCart, setCombinedCart] = useState<CombinedCartItem[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Guest cart items har redan product_variants från useCart hook
     const mappedGuest: CombinedCartItem[] = guestCart.map(item => ({
       id: item.product_variant_id,
       quantity: item.quantity,
@@ -38,7 +35,9 @@ export const Cart = () => {
     setCombinedCart([...mappedUser, ...mappedGuest]);
   }, [cartItems, guestCart]);
 
-  
+  const handleCheckout = () => {
+    navigate('/checkout');
+  };
 
   if (loading) {
     return <div className="text-center py-8">Laddar kundvagn...</div>;
@@ -46,12 +45,17 @@ export const Cart = () => {
 
   if (combinedCart.length === 0) {
     return (
-      <div className="text-center py-8">
-        <h1 className="text-3xl font-bold mb-4">Din kundvagn</h1>
-        <p className="text-muted-foreground mb-4">Din kundvagn är tom</p>
-        <Link to="/">
-          <Button>Fortsätt handla</Button>
-        </Link>
+      <div className="container mx-auto px-4 py-16">
+        <div className="max-w-md mx-auto text-center">
+          <ShoppingCart className="h-24 w-24 mx-auto text-gray-300 mb-4" />
+          <h1 className="text-3xl font-bold mb-2">Din kundvagn är tom</h1>
+          <p className="text-muted-foreground mb-6">
+            Börja handla och lägg till produkter i din kundvagn
+          </p>
+          <Link to="/products">
+            <Button size="lg">Börja handla</Button>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -119,21 +123,46 @@ export const Cart = () => {
         </div>
 
         <div>
-          <Card>
+          <Card className="sticky top-8">
             <CardHeader>
               <CardTitle>Ordersammanfattning</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex justify-between text-lg font-bold">
-                <span>Totalt:</span>
-                <span>{getTotalPrice().toFixed(2)} kr</span>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Delsumma</span>
+                  <span>{getTotalPrice().toFixed(2)} kr</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Frakt</span>
+                  <span>Beräknas vid kassan</span>
+                </div>
               </div>
-              <Link to="/checkout" className="block">
-              <Button className="w-full" size="lg">Gå till kassan</Button>
+              
+              <div className="border-t pt-4">
+                <div className="flex justify-between text-lg font-bold">
+                  <span>Totalt:</span>
+                  <span>{getTotalPrice().toFixed(2)} kr</span>
+                </div>
+              </div>
+
+              <Button 
+                className="w-full" 
+                size="lg"
+                onClick={handleCheckout}
+              >
+                Gå till kassan
+              </Button>
+              
+              <Link to="/products" className="block">
+                <Button variant="outline" className="w-full">
+                  Fortsätt handla
+                </Button>
               </Link>
-              <Link to="/" className="block">
-                <Button variant="outline" className="w-full">Fortsätt handla</Button>
-              </Link>
+
+              <p className="text-xs text-muted-foreground text-center pt-2">
+                Säker betalning med Stripe
+              </p>
             </CardContent>
           </Card>
         </div>
