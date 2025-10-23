@@ -57,7 +57,7 @@ export const Header = () => {
 
         <div className="flex items-center space-x-4">
           <Link to="/cart">
-            <Button variant="outline" size="sm" className="relative">
+            <Button variant="outline" size="lg" className="relative bg-primary">
               <ShoppingCart className="h-4 w-4" />
               {totalItems > 0 && (
                 <Badge 
@@ -70,7 +70,7 @@ export const Header = () => {
             </Button>
           </Link>
           
-          {user ? (
+          {/* {user ? (
             <div className="flex items-center space-x-2">
               <span className="text-sm text-muted-foreground">
                 {user.email}
@@ -86,7 +86,7 @@ export const Header = () => {
                 Logga in
               </Button>
             </Link>
-          )}
+          )} */}
         </div>
       </div>
     </header>

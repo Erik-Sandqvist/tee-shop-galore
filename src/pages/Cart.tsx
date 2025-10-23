@@ -2,10 +2,15 @@ import { useCart } from '@/context/CartContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/lib/supabase';
 import { Minus, Plus, Trash2, ShoppingCart } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { ProductVariant, Product } from '@/types';
+import { useToast } from '@/components/ui/use-toast';
+import { loadStripe, Stripe as StripeJS } from '@stripe/stripe-js';
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 interface CombinedCartItem {
   id: string;
@@ -17,6 +22,7 @@ interface CombinedCartItem {
 export const Cart = () => {
   const { cartItems, guestCart, updateQuantity, removeFromCart, getTotalPrice, loading } = useCart();
   const [combinedCart, setCombinedCart] = useState<CombinedCartItem[]>([]);
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,8 +41,54 @@ export const Cart = () => {
     setCombinedCart([...mappedUser, ...mappedGuest]);
   }, [cartItems, guestCart]);
 
-  const handleCheckout = () => {
-    navigate('/checkout');
+  const handleCheckout = async () => {
+    try {
+      if (combinedCart.length === 0) {
+        toast({
+          title: "Tom kundvagn",
+          description: "Din kundvagn är tom.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Visa loading
+      toast({
+        title: "Förbereder betalning",
+        description: "Vänligen vänta...",
+      });
+      
+      // Förbered data för server
+      const items = combinedCart.map(item => ({
+        name: item.product_variants?.products?.name || 'Produkt',
+        price: item.product_variants?.products?.price || 0,
+        quantity: item.quantity
+      }));
+
+      // Anropa din lokala server
+      const response = await fetch('http://localhost:3000/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cartItems: items })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Något gick fel');
+      }
+      
+      const { url } = await response.json();
+      
+      // Redirect till Stripe
+      window.location.href = url;
+    } catch (error) {
+      console.error('Checkout error:', error);
+      toast({
+        title: "Betalningsfel",
+        description: error instanceof Error ? error.message : "Kunde inte starta betalningen",
+        variant: "destructive",
+      });
+    }
   };
 
   if (loading) {
