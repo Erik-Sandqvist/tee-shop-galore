@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-// Lägg in Stripe-nyckeln direkt i koden
-const stripe = require('stripe')('sk_test_51SKkHmHU1fUnZbnqVTnOgR3C8ovni3tK1xqGJ8CPyxdrRuDcuWaWR5VkX6rqZBpn6YdkPXqafC96nvN83hO5UGkt00VsTIfnSM');
+require('dotenv').config();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const app = express();
 app.use(cors());
