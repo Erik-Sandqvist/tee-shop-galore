@@ -97,7 +97,7 @@ const Index = () => {
             Nohamma
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            En butik som är till för norrahammarsborna att kunna utrycka sin kärlek till Nohamma
+            En butik som är till för norrahammarsborna att kunna utrycka sin kärlek till Nohamma genom kläder och accessoarer. Vi erbjuder ett brett utbud av produkter med unika och kreativa designer som speglar Nohammas anda och kultur.
           </p>
           <div className="space-x-4">
             <Link to="/products">
