@@ -3,90 +3,69 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: #1e4469;         /* 210 30% 80% */
-    --foreground: #22252b;         /* 222 15% 15% */
-  
-    --card: #ffffff;               /* 0 0% 100% */
-    --card-foreground: #22252b;    /* 222 15% 15% */
-    --popover: #ffffff;
-    --popover-foreground: #22252b;
-  
-    --primary: #ffffff;            /* 220 30% 56% */
-    --primary-foreground: #ffffff; /* vit */
-  
-    --secondary: #d95c9c;          /* 330 60% 60% */
-    --secondary-foreground: #ffffff;
-              
-    --muted-foreground: #113d96;   /* 222 10% 30% */
-  
-    --accent: #f7b500;             /* 45 100% 55% */
-    --accent-foreground: #22252b;
-  
-    --destructive: #cc3333;        /* 0 70% 50% */
-    --destructive-foreground: #ffffff;
-  
-    --border: #d4dbe3;             /* 210 16% 85% */
-    --input: #d4dbe3;
-    --ring: #02173a;               /* 220 90% 56% */
-  
-    --radius: 0.5rem;
-  
-    --shop-primary: #091e41;       /* 220 90% 56% */
-    --shop-primary-light: #a7ffae; /* 220 90% 80% */
-    --shop-success: #1e8c4d;       /* 142 70% 40% */
-    --shop-warning: #ffb31a;       /* 42 90% 55% */
-    --shop-error: #cc3333;         /* 0 70% 50% */
-  
-    --sidebar-background: #fafafa; /* 0 0% 98% */
-    --sidebar-foreground: #22252b;
-    --sidebar-primary: #16305c;
-    --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #f7b500;
-    --sidebar-accent-foreground: #22252b;
-    --sidebar-border: #d4dbe3;
-    --sidebar-ring: #2979ff;
+  body {
+    @apply bg-background text-foreground transition-colors duration-300;
   }
   
-
-  /* Dark mode overrides */
   .dark {
-    --background: #181a1e;         /* 222 15% 10% */
-    --foreground: #f2f5f7;         /* 210 20% 95% */
+    background-color: #083540;
+    color: #f1f5f9;
+  }
   
-    --card: #2e3239;               /* 222 15% 20% */
-    --card-foreground: #f2f5f7;
-    --popover: #2e3239;
-    --popover-foreground: #f2f5f7;
+  .dark body {
+    background-color: #083540;
+    color: #f1f5f9;
+  }
   
-    --primary: #0c1c30;            /* 220 90% 66% */
-    --primary-foreground: #ffffff;
+  .dark .bg-background {
+    background-color: #083540 !important;
+  }
   
-    --secondary: #e080b6;          /* 330 60% 70% */
-    --secondary-foreground: #ffffff;
+  .dark .text-foreground {
+    color: #f1f5f9 !important;
+  }
   
-    --muted: #2e3239;              /* 222 10% 20% */
-    --muted-foreground: #f2f5f7;
+  .dark .bg-card {
+    background-color: #1e293b;
+  }
   
-    --accent: #ffd54d;             /* 45 100% 65% */
-    --accent-foreground: #181a1e;
+  .dark .text-card-foreground {
+    color: #f1f5f9;
+  }
   
-    --destructive: #e64d4d;        /* 0 70% 60% */
-    --destructive-foreground: #ffffff;
+  .dark .bg-muted {
+    background-color: #334155;
+  }
   
-    --border: #4a4f59;             /* 222 10% 30% */
-    --input: #4a4f59;
-    --ring: #4c9aff;
+  .dark .text-muted-foreground {
+    color: #94a3b8;
+  }
   
-    --sidebar-background: #181a1e;
-    --sidebar-foreground: #f2f5f7;
-    --sidebar-primary: #133e75;
-    --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #ffd54d;
-    --sidebar-accent-foreground: #f2f5f7;
-    --sidebar-border: #4a4f59;
-    --sidebar-ring: #4c9aff;
-  }  
+  .dark .bg-popover {
+    background-color: #1e293b;
+  }
+  
+  .dark .text-popover-foreground {
+    color: #f1f5f9;
+  }
+  
+  .dark .border {
+    border-color: #334155;
+  }
+  
+  .dark .border-border {
+    border-color: #334155;
+  }
+  
+  .dark input,
+  .dark textarea,
+  .dark select {
+    background-color: #1e293b;
+    border-color: #334155;
+    color: #f1f5f9;
+  }
+  
+  .dark button {
+    border-color: #334155;
+  }
 }
-
-

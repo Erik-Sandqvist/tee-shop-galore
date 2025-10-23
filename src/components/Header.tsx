@@ -1,15 +1,16 @@
 import { Link } from 'react-router-dom';
-import { ShoppingCart, User } from 'lucide-react';
+import { ShoppingCart, User, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-// import { useCart } from '@/hooks/useCart';
 import { useCart } from '@/context/CartContext'
+import { useTheme } from '@/context/ThemeContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useState } from 'react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 
 export const Header = () => {
   const { getTotalItems, cartItems, guestCart } = useCart();
+  const { theme, toggleTheme } = useTheme();
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [totalItems, setTotalItems] = useState(0);
 
@@ -45,7 +46,18 @@ export const Header = () => {
         <Link to="/" className="text-2xl font-bold text-foreground">
           Nohamma
         </Link>
-        
+        <Button
+  variant="ghost"
+  size="icon"
+  onClick={toggleTheme}
+  className="relative"
+>
+  {theme === 'dark' ? (
+    <Sun className="h-5 w-5" />
+  ) : (
+    <Moon className="h-5 w-5" />
+  )}
+</Button>
         {/* <nav className="hidden md:flex space-x-6">
           <Link to="/" className="text-foreground hover:text-primary transition-colors">
             Home

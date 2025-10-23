@@ -18,27 +18,30 @@ export default {
     },
     extend: {
       colors: {
-        background: "#f5f6f7",   
-        foreground: "#22252b",   // mörk text
-
+        border: "#d4dbe3",
+        input: "#d4dbe3",
+        ring: "#cfb408",
+        background: "#f5f6f7",
+        foreground: "#22252b",
         primary: {
-          DEFAULT: "#cfb408",    // blå
+          DEFAULT: "#cfb408",
+          foreground: "#ffffff",
         },
         secondary: {
-          DEFAULT: "#d95c9c",    // rosa/lila
+          DEFAULT: "#d95c9c",
           foreground: "#ffffff",
         },
         destructive: {
-          DEFAULT: "#cc3333",    // röd
+          DEFAULT: "#cc3333",
           foreground: "#ffffff",
         },
         muted: {
-          DEFAULT: "#f2f5f7",    // ljus neutral
+          DEFAULT: "#f2f5f7",
           foreground: "#4a4f59",
         },
         accent: {
-          DEFAULT: "#f7b500",    
-          foreground: "#121f3b",
+          DEFAULT: "#f7b500",
+          foreground: "#22252b",
         },
         popover: {
           DEFAULT: "#ffffff",
@@ -48,24 +51,6 @@ export default {
           DEFAULT: "#ffffff",
           foreground: "#22252b",
         },
-
-        sidebar: {
-          DEFAULT: "#fafafa",
-          foreground: "#22252b",
-          primary: "#2979ff",
-          "primary-foreground": "#ffffff",
-          accent: "#f7b500",
-          "accent-foreground": "#22252b",
-          border: "#d4dbe3",
-          ring: "#2979ff",
-        },
-
-        // Shop-specific
-        "shop-primary": "#2979ff",
-        "shop-primary-light": "#a7c7ff",
-        "shop-success": "#1e8c4d",
-        "shop-warning": "#ffb31a",
-        "shop-error": "#cc3333",
       },
       borderRadius: {
         lg: "0.5rem",
