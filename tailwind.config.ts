@@ -17,6 +17,9 @@ export default {
       },
     },
     extend: {
+  fontFamily: {
+  sans: ['Montserrat', 'sans-serif'],
+},
       colors: {
         border: "#d4dbe3",
         input: "#d4dbe3",
