@@ -80,6 +80,12 @@ function FeaturedProducts() {
           key={product.id}
           product={product}
           variants={getProductVariants(product.id)}
+          enableMagicEffects={true}
+          enableTilt={false}
+          enableMagnetism={true}
+          clickEffect={true}
+          glowColor="132, 0, 255"
+          particleCount={12}
         />
       ))}
     </div>
@@ -91,9 +97,9 @@ const Index = () => {
     <div className="min-h-screen bg-background">
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary to-background py-20">
+      <section className="bg-gradient-to-br from-primary to-background py-16 mt-2">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl font-bold mb-6 mt-6 text-foreground">
+          <h1 className="text-5xl font-bold mb-6 mt-4 text-foreground">
             Nohamma
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
