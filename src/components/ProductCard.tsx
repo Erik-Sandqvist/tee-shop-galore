@@ -355,7 +355,7 @@ export const ProductCard = ({
             border-radius: inherit;
             padding: 2px;
             background: radial-gradient(
-              400px circle at var(--glow-x) var(--glow-y),
+              20px circle at var(--glow-x) var(--glow-y),
               rgba(var(--glow-color), 0.8),
               rgba(var(--glow-color), 0.4) 30%,
               transparent 60%
@@ -380,7 +380,7 @@ export const ProductCard = ({
           .product-card-magic::after {
             content: '';
             position: absolute;
-            inset: -100px;
+            inset: -10px;
             background: radial-gradient(
               600px circle at var(--glow-x) var(--glow-y),
               rgba(var(--glow-color), 0.15),
