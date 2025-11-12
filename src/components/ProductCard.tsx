@@ -59,11 +59,11 @@ export const ProductCard = ({ product, variants }: ProductCardProps) => {
   const selectedOut = !selectedVariant || getStock(selectedVariant) === 0;
 
   // Auto-välj första i lager om inget valt
-  useEffect(() => {
-    if (!selectedSize && inStockVariants.length > 0) {
-      setSelectedSize(inStockVariants[0].size!);
-    }
-  }, [selectedSize, inStockVariants]);
+  // useEffect(() => {
+  //   if (!selectedSize && inStockVariants.length > 0) {
+  //     setSelectedSize(inStockVariants[0].size!);
+  //   }
+  // }, [selectedSize, inStockVariants]);
 
   const sizeHasStock = (size: string) =>
     normalized.some((v) => v.size === size && getStock(v) > 0);
