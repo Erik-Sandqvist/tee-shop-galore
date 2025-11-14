@@ -17,9 +17,10 @@ export default {
       },
     },
     extend: {
-  fontFamily: {
-  sans: ['Montserrat', 'sans-serif'],
-},
+      fontFamily: {
+        sans: ['Montserrat', 'sans-serif'],
+        rubrik: ['"Rubrik Dirt"', 'cursive'],
+      },
       colors: {
         border: "#d4dbe3",
         input: "#d4dbe3",

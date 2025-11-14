@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Rubik+Dirt&display=swap');
+
 @layer base {
   body {
     @apply bg-background text-foreground transition-colors duration-300;

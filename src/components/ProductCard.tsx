@@ -13,28 +13,18 @@ interface ProductCardProps {
   enableMagicEffects?: boolean;
   glowColor?: string;
   particleCount?: number;
-  enableTilt?: boolean;
-  enableMagnetism?: boolean;
-  clickEffect?: boolean;
-  enableBorderGlow?: boolean;
 }
 
-const DEFAULT_GLOW_COLOR = '132, 0, 255';
+const DEFAULT_GLOW_COLOR = '255, 215, 0';
 const DEFAULT_PARTICLE_COUNT = 12;
 
-// Robust lagerläsning
 const getStock = (v: ProductVariant) => {
-  const raw =
-    (v as any).stock_quantity ??
-    (v as any).stock ??
-    (v as any).inventory ??
-    (v as any).quantity ??
-    0;
+  const raw = (v as any).stock_quantity ?? (v as any).stock ?? (v as any).inventory ?? (v as any).quantity ?? 0;
   const n = typeof raw === "string" ? parseInt(raw, 10) : Number(raw);
   return Number.isFinite(n) ? n : 0;
 };
 
-const createParticleElement = (x: number, y: number, color = DEFAULT_GLOW_COLOR) => {
+const createParticleElement = (x: number, y: number, color: string) => {
   const el = document.createElement('div');
   el.className = 'magic-particle';
   el.style.cssText = `
@@ -58,10 +48,6 @@ export const ProductCard = ({
   enableMagicEffects = false,
   glowColor = DEFAULT_GLOW_COLOR,
   particleCount = DEFAULT_PARTICLE_COUNT,
-  enableTilt = true,
-  enableMagnetism = true,
-  clickEffect = true,
-  enableBorderGlow = true
 }: ProductCardProps) => {
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
@@ -74,16 +60,13 @@ export const ProductCard = ({
   const isHoveredRef = useRef(false);
   const memoizedParticles = useRef<HTMLDivElement[]>([]);
   const particlesInitialized = useRef(false);
-  const magnetismAnimationRef = useRef<gsap.core.Tween | null>(null);
 
-  // Normalisera storlekar
   const sizeOrder = ["XS", "S", "M", "L", "XL", "XXL"] as const;
   const normalized = variants.map((v) => ({
     ...v,
     size: v.size ? String(v.size).toUpperCase() : v.size,
   }));
 
-  // Alla storlekar i rätt ordning
   const allSizes = [...new Set(normalized.map((v) => v.size).filter(Boolean))] as string[];
   const orderedAllSizes = [...allSizes].sort((a, b) => {
     const ai = sizeOrder.indexOf(a as any);
@@ -94,7 +77,6 @@ export const ProductCard = ({
     return ai - bi;
   });
 
-  // Lagerstatus och vald variant
   const inStockVariants = normalized.filter((v) => getStock(v) > 0);
   const selectedVariant =
     normalized.find((v) => v.size === selectedSize && getStock(v) > 0) ||
@@ -104,13 +86,10 @@ export const ProductCard = ({
 
   const allOutOfStock = normalized.every((v) => getStock(v) === 0);
   const selectedOut = !selectedVariant || getStock(selectedVariant) === 0;
-
-  const sizeHasStock = (size: string) =>
-    normalized.some((v) => v.size === size && getStock(v) > 0);
+  const sizeHasStock = (size: string) => normalized.some((v) => v.size === size && getStock(v) > 0);
 
   const initializeParticles = useCallback(() => {
     if (particlesInitialized.current || !cardRef.current || !enableMagicEffects) return;
-
     const { width, height } = cardRef.current.getBoundingClientRect();
     memoizedParticles.current = Array.from({ length: particleCount }, () =>
       createParticleElement(Math.random() * width, Math.random() * height, glowColor)
@@ -121,17 +100,13 @@ export const ProductCard = ({
   const clearAllParticles = useCallback(() => {
     timeoutsRef.current.forEach(clearTimeout);
     timeoutsRef.current = [];
-    magnetismAnimationRef.current?.kill();
-
     particlesRef.current.forEach(particle => {
       gsap.to(particle, {
         scale: 0,
         opacity: 0,
         duration: 0.3,
         ease: 'back.in(1.7)',
-        onComplete: () => {
-          particle.parentNode?.removeChild(particle);
-        }
+        onComplete: () => particle.parentNode?.removeChild(particle)
       });
     });
     particlesRef.current = [];
@@ -139,24 +114,16 @@ export const ProductCard = ({
 
   const animateParticles = useCallback(() => {
     if (!cardRef.current || !isHoveredRef.current || !enableMagicEffects) return;
-
-    if (!particlesInitialized.current) {
-      initializeParticles();
-    }
+    if (!particlesInitialized.current) initializeParticles();
 
     memoizedParticles.current.forEach((particle, index) => {
       const timeoutId = setTimeout(() => {
         if (!isHoveredRef.current || !cardRef.current) return;
-
         const clone = particle.cloneNode(true) as HTMLDivElement;
         cardRef.current.appendChild(clone);
         particlesRef.current.push(clone);
 
-        gsap.fromTo(clone, 
-          { scale: 0, opacity: 0 }, 
-          { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(1.7)' }
-        );
-
+        gsap.fromTo(clone, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(1.7)' });
         gsap.to(clone, {
           x: (Math.random() - 0.5) * 120,
           y: (Math.random() - 0.5) * 120,
@@ -166,7 +133,6 @@ export const ProductCard = ({
           repeat: -1,
           yoyo: true
         });
-
         gsap.to(clone, {
           opacity: 0.6,
           duration: 1.5,
@@ -175,7 +141,6 @@ export const ProductCard = ({
           yoyo: true
         });
       }, index * 80);
-
       timeoutsRef.current.push(timeoutId);
     });
   }, [initializeParticles, enableMagicEffects]);
@@ -187,54 +152,28 @@ export const ProductCard = ({
     }
   };
 
-  const handleCardClick = () => {
-    navigate(`/products/${product.id}`);
-  };
+  const handleCardClick = () => navigate(`/products/${product.id}`);
 
-  // Magic effects
   useEffect(() => {
     if (!enableMagicEffects || !cardRef.current) return;
-
     const element = cardRef.current;
 
     const handleMouseEnter = () => {
       isHoveredRef.current = true;
       setIsHovered(true);
       animateParticles();
-
-      if (enableTilt) {
-        gsap.to(element, {
-          rotateX: 3,
-          rotateY: 3,
-          duration: 0.4,
-          ease: 'power2.out',
-          transformPerspective: 1000
-        });
-      }
     };
 
     const handleMouseLeave = () => {
       isHoveredRef.current = false;
       setIsHovered(false);
       clearAllParticles();
-
-      if (enableTilt) {
-        gsap.to(element, {
-          rotateX: 0,
-          rotateY: 0,
-          duration: 0.4,
-          ease: 'power2.out'
-        });
-      }
-
-      if (enableMagnetism) {
-        gsap.to(element, {
-          x: 0,
-          y: 0,
-          duration: 0.4,
-          ease: 'power2.out'
-        });
-      }
+      gsap.to(element, {
+        x: 0,
+        y: 0,
+        duration: 0.4,
+        ease: 'power2.out'
+      });
     };
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -244,45 +183,23 @@ export const ProductCard = ({
       const centerX = rect.width / 2;
       const centerY = rect.height / 2;
 
-      // Update glow position
-      const relativeX = (x / rect.width) * 100;
-      const relativeY = (y / rect.height) * 100;
-      setMousePos({ x: relativeX, y: relativeY });
+      setMousePos({ x: (x / rect.width) * 100, y: (y / rect.height) * 100 });
 
-      if (enableTilt) {
-        const rotateX = ((y - centerY) / centerY) * -8;
-        const rotateY = ((x - centerX) / centerX) * 8;
+      const magnetX = (x - centerX) * 0.03;
+      const magnetY = (y - centerY) * 0.03;
 
-        gsap.to(element, {
-          rotateX,
-          rotateY,
-          duration: 0.1,
-          ease: 'power2.out',
-          transformPerspective: 1000,
-          transformStyle: 'preserve-3d'
-        });
-      }
-
-      if (enableMagnetism) {
-        const magnetX = (x - centerX) * 0.03;
-        const magnetY = (y - centerY) * 0.03;
-
-        magnetismAnimationRef.current = gsap.to(element, {
-          x: magnetX,
-          y: magnetY,
-          duration: 0.3,
-          ease: 'power2.out'
-        });
-      }
+      gsap.to(element, {
+        x: magnetX,
+        y: magnetY,
+        duration: 0.1,
+        ease: 'power2.out'
+      });
     };
 
     const handleClick = (e: MouseEvent) => {
-      if (!clickEffect) return;
-
       const rect = element.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-
       const maxDistance = Math.max(
         Math.hypot(x, y),
         Math.hypot(x - rect.width, y),
@@ -302,20 +219,14 @@ export const ProductCard = ({
         pointer-events: none;
         z-index: 50;
       `;
-
       element.appendChild(ripple);
-
-      gsap.fromTo(
-        ripple,
-        { scale: 0, opacity: 1 },
-        {
-          scale: 1,
-          opacity: 0,
-          duration: 0.8,
-          ease: 'power2.out',
-          onComplete: () => ripple.remove()
-        }
-      );
+      gsap.fromTo(ripple, { scale: 0, opacity: 1 }, {
+        scale: 1,
+        opacity: 0,
+        duration: 0.8,
+        ease: 'power2.out',
+        onComplete: () => ripple.remove()
+      });
     };
 
     element.addEventListener('mouseenter', handleMouseEnter);
@@ -331,9 +242,9 @@ export const ProductCard = ({
       element.removeEventListener('click', handleClick);
       clearAllParticles();
     };
-  }, [animateParticles, clearAllParticles, enableMagicEffects, enableTilt, enableMagnetism, clickEffect, glowColor]);
+  }, [animateParticles, clearAllParticles, enableMagicEffects, glowColor]);
 
-  const cardStyle = enableMagicEffects && enableBorderGlow ? {
+  const cardStyle = enableMagicEffects ? {
     '--glow-x': `${mousePos.x}%`,
     '--glow-y': `${mousePos.y}%`,
     '--glow-color': glowColor,
@@ -347,7 +258,6 @@ export const ProductCard = ({
           .product-card-magic {
             position: relative;
           }
-          
           .product-card-magic::before {
             content: '';
             position: absolute;
@@ -369,23 +279,14 @@ export const ProductCard = ({
             transition: opacity 0.3s ease;
             z-index: 1;
           }
-          
           .product-card-magic:hover {
-            box-shadow: 
-              0 0 30px rgba(var(--glow-color), 0.3),
-              0 0 60px rgba(var(--glow-color), 0.1),
-              0 4px 20px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 30px rgba(var(--glow-color), 0.3), 0 0 60px rgba(var(--glow-color), 0.1), 0 4px 20px rgba(0, 0, 0, 0.1);
           }
-          
           .product-card-magic::after {
             content: '';
             position: absolute;
             inset: -10px;
-            background: radial-gradient(
-              600px circle at var(--glow-x) var(--glow-y),
-              rgba(var(--glow-color), 0.15),
-              transparent 60%
-            );
+            background: radial-gradient(600px circle at var(--glow-x) var(--glow-y), rgba(var(--glow-color), 0.15), transparent 60%);
             pointer-events: none;
             opacity: var(--glow-opacity);
             transition: opacity 0.3s ease;
@@ -397,19 +298,17 @@ export const ProductCard = ({
       <Card 
         ref={cardRef}
         className={cn(
-          "overflow-hidden group hover:shadow-lg transition-shadow relative cursor-pointer",
+          "overflow-hidden group hover:shadow-lg transition-shadow relative cursor-pointer rounded-lg",
           enableMagicEffects && "transform-gpu will-change-transform product-card-magic"
         )}
         onClick={handleCardClick}
         style={{
           ...cardStyle,
           position: 'relative',
-          overflow: 'visible',
-          transformStyle: enableMagicEffects ? 'preserve-3d' : undefined
+          overflow: 'visible'
         }}
       >
-        {/* Produktbild */}
-        <div className="aspect-square overflow-hidden relative">
+        <div className="aspect-square overflow-hidden relative rounded-t-lg">
           <img
             src={product.image_url}
             alt={product.name}
@@ -426,10 +325,8 @@ export const ProductCard = ({
           <div className="flex items-start justify-between gap-3">
             <h3 className="font-medium line-clamp-2">{product.name}</h3>
           </div>
-
           <p className="text-lg font-bold">{product.price} kr</p>
 
-          {/* Storlekar eller tomt utrymme */}
           {orderedAllSizes.length > 0 ? (
             <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
               {orderedAllSizes.map((size) => {
@@ -446,9 +343,7 @@ export const ProductCard = ({
                     disabled={!available}
                     className={cn(
                       "px-3 py-1.5 text-sm rounded border transition",
-                      isSelected
-                        ? "bg-black text-white border-black"
-                        : "bg-white text-black hover:bg-neutral-100",
+                      isSelected ? "bg-black text-white border-black" : "bg-white text-black hover:bg-neutral-100",
                       !available && "opacity-50 cursor-not-allowed"
                     )}
                     aria-pressed={isSelected}

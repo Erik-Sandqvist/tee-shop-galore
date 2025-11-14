@@ -8,6 +8,7 @@ import type { Database } from '@/integrations/supabase/types';
 import { Product, ProductVariant, Category } from '@/types';
 import { ProductCard } from '@/components/ProductCard';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Silk } from '@/components/Silk';
 
 type ProductType = Database['public']['Tables']['products']['Row'];
 
@@ -81,10 +82,7 @@ function FeaturedProducts() {
           product={product}
           variants={getProductVariants(product.id)}
           enableMagicEffects={true}
-          enableTilt={false}
-          enableMagnetism={true}
-          clickEffect={true}
-          glowColor="132, 0, 255"
+          glowColor="179, 176, 7"
           particleCount={12}
         />
       ))}
@@ -95,14 +93,29 @@ function FeaturedProducts() {
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
-
+{/* <Silk
+  speed={5}
+  scale={1}
+  color="#7B7481"
+  noiseIntensity={1.5}
+  rotation={0}
+/> */}
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary to-background py-16 mt-2">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl font-bold mb-6 mt-4 text-foreground">
+      <section 
+        className="relative py-16 mt-2 overflow-hidden" 
+        style={{ boxShadow: '0 25px 60px -1px rgba(255, 219, 41, 0.8)' }}
+      >
+        {/* Silk Background */}
+        <div className="absolute inset-0 w-full h-full">
+          <Silk speed={3} scale={1.5} color="#ffdb29" noiseIntensity={1.2} rotation={0} />
+        </div>
+        
+        {/* Content */}
+        <div className="relative z-10 container mx-auto px-4 text-center">
+        <h1 style={{ fontFamily: 'Rubik Dirt, cursive' }} className="text-6xl mb-6 mt-4 text-foreground">
             Nohamma
           </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+          <p className="text-2xl text-foreground mb-8 max-w-2xl mx-auto">
             En butik som är till för norrahammarsborna att kunna utrycka sin kärlek till Nohamma genom kläder och accessoarer. Vi erbjuder ett brett utbud av produkter med unika och kreativa designer som speglar Nohammas anda och kultur.
           </p>
           <div className="space-x-4">
@@ -111,11 +124,7 @@ const Index = () => {
                 Handla nu
               </Button>
             </Link>
-            {/* <Link to="/products">
-              <Button variant="outline" size="lg" className="px-8">
-                View Collection
-              </Button>
-            </Link> */}
+
           </div>
         </div>
       </section>
