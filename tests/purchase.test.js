@@ -1,28 +1,13 @@
 import { describe, test, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
+import app from '../server/server.js';
+import db from '../server/db.js';
 
 describe('Purchase Product Test', () => {
-  let app, db;
   let productId;
   let initialStock;
 
   beforeAll(async () => {
-    // Ladda app och db
-    try {
-      const serverModule = await import('../server.js');
-      app = serverModule.default || serverModule.app;
-      const dbModule = await import('../db.js');
-      db = dbModule.default || dbModule.db;
-    } catch (error) {
-      console.log('Note: server.js or db.js not found yet');
-      const express = (await import('express')).default;
-      app = express();
-      db = { 
-        query: async () => ({ rows: [{ id: 1, stock: 10 }] }), 
-        end: async () => {} 
-      };
-    }
-
     // Skapa en testprodukt (vattenflaska) i databasen
     const result = await db.query(
       'INSERT INTO products (name, price, stock) VALUES ($1, $2, $3) RETURNING id, stock',

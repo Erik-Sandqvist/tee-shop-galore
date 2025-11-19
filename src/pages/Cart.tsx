@@ -2,15 +2,11 @@ import { useCart } from '@/context/CartContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/lib/supabase';
 import { Minus, Plus, Trash2, ShoppingCart } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { ProductVariant, Product } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
-import { loadStripe, Stripe as StripeJS } from '@stripe/stripe-js';
-
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 interface CombinedCartItem {
   id: string;
@@ -22,8 +18,8 @@ interface CombinedCartItem {
 export const Cart = () => {
   const { cartItems, guestCart, updateQuantity, removeFromCart, getTotalPrice, loading } = useCart();
   const [combinedCart, setCombinedCart] = useState<CombinedCartItem[]>([]);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   useEffect(() => {
     const mappedGuest: CombinedCartItem[] = guestCart.map(item => ({
@@ -52,15 +48,19 @@ export const Cart = () => {
         return;
       }
 
+      setIsCheckingOut(true);
+
       // Visa loading
       toast({
         title: "Förbereder betalning",
         description: "Vänligen vänta...",
       });
       
-      // Förbered data för server
+      // Förbered data för server - inkludera variantId
       const items = combinedCart.map(item => ({
+        variantId: item.id, // Detta är variant ID:t
         name: item.product_variants?.products?.name || 'Produkt',
+        description: `${item.product_variants?.color || ''} ${item.product_variants?.size || ''}`.trim(),
         price: item.product_variants?.products?.price || 0,
         quantity: item.quantity
       }));
@@ -88,6 +88,7 @@ export const Cart = () => {
         description: error instanceof Error ? error.message : "Kunde inte starta betalningen",
         variant: "destructive",
       });
+      setIsCheckingOut(false);
     }
   };
 
@@ -147,6 +148,7 @@ export const Cart = () => {
                       variant="outline" 
                       size="icon" 
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      disabled={isCheckingOut}
                     >
                       <Minus className="h-4 w-4" />
                     </Button>
@@ -155,6 +157,7 @@ export const Cart = () => {
                       variant="outline" 
                       size="icon" 
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      disabled={isCheckingOut}
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
@@ -165,6 +168,7 @@ export const Cart = () => {
                     size="icon" 
                     onClick={() => removeFromCart(item.id)} 
                     className="text-destructive hover:text-destructive"
+                    disabled={isCheckingOut}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -202,12 +206,13 @@ export const Cart = () => {
                 className="w-full" 
                 size="lg"
                 onClick={handleCheckout}
+                disabled={isCheckingOut}
               >
-                Gå till kassan
+                {isCheckingOut ? 'Förbereder...' : 'Gå till kassan'}
               </Button>
               
               <Link to="/products" className="block">
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" disabled={isCheckingOut}>
                   Fortsätt handla
                 </Button>
               </Link>
