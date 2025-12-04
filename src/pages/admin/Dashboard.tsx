@@ -16,7 +16,7 @@ export const Dashboard = () => {
         </Card>
         <Card className="p-6">
           <h3 className="text-lg font-medium">Revenue</h3>
-          <p className="text-3xl font-bold mt-2">$3,240</p>
+          <p className="text-3xl font-bold mt-2">3,240</p>
         </Card>
       </div>
     </div>
