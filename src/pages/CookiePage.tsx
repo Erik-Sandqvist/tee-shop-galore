@@ -15,9 +15,8 @@ export const CookiePage = () => {
         </p>
         
         <Tabs defaultValue="basics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="basics">Grunder</TabsTrigger>
-            <TabsTrigger value="recently-viewed">Senast Visade</TabsTrigger>
             <TabsTrigger value="guest-cart">Gäst-Varukorg</TabsTrigger>
             <TabsTrigger value="consent">Cookie Consent</TabsTrigger>
             <TabsTrigger value="info">Information</TabsTrigger>
@@ -26,11 +25,6 @@ export const CookiePage = () => {
           {/* Grundläggande Cookie Demo */}
           <TabsContent value="basics">
             <CookieDemo />
-          </TabsContent>
-
-          {/* Recently Viewed Products */}
-          <TabsContent value="recently-viewed">
-            <RecentlyViewedProducts />
           </TabsContent>
 
           {/* Guest Cart */}
