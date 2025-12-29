@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ShoppingCart, User, Moon, Sun } from 'lucide-react';
+import { ShoppingCart, User, Moon, Sun, Cookie } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/context/CartContext'
@@ -68,6 +68,12 @@ export const Header = () => {
         </nav> */}
 
         <div className="flex items-center space-x-4">
+          <Link to="/cookies">
+            <Button variant="outline" size="icon" title="Cookie Explorer">
+              <Cookie className="h-4 w-4" />
+            </Button>
+          </Link>
+          
           <Link to="/cart">
             <Button variant="outline" size="lg" className="relative bg-primary">
               <ShoppingCart className="h-4 w-4" />

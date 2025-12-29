@@ -9,6 +9,8 @@ import { ProductDetail } from "./pages/ProductDetail";
 import { Cart } from "./pages/Cart";
 import { Auth } from "./pages/Auth";
 import { About } from "./pages/About";
+import { CookiePage } from "./pages/CookiePage";
+import { CookieConsentBanner } from "./components/CookieConsentBanner";
 import { Layout } from "./components/Layout";
 import NotFound from "./pages/NotFound";
 import { Header } from "./components/Header";
@@ -30,6 +32,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <CookieConsentBanner />
         <BrowserRouter>
           <CartProvider>
             {/* Routes will determine whether to show Header or not */}
@@ -47,6 +50,7 @@ const App = () => (
               <Route path="/" element={<Layout><Index /></Layout>} />
               <Route path="/products" element={<Layout><Products /></Layout>} />
               <Route path="/about" element={<Layout><About /></Layout>} />
+              <Route path="/cookies" element={<Layout><CookiePage /></Layout>} />
               <Route path="/products/:id" element={<Layout><ProductDetail /></Layout>} />
               <Route path="/cart" element={<Layout><Cart /></Layout>} />
               <Route path="/auth" element={<Layout><Auth /></Layout>} />

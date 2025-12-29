@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, ProductVariant, Category } from '@/types';
 import { ProductCard } from '@/components/ProductCard';
+import { RecentlyViewedSection } from '@/components/RecentlyViewedSection';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -102,6 +103,11 @@ export const Products = () => {
           </TabsContent>
         ))}
       </Tabs>
+
+      {/* Recently Viewed Products Section */}
+      <div className="mt-16">
+        <RecentlyViewedSection />
+      </div>
     </div>
   );
 };

@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, ShoppingCart, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { trackProductView } from '@/components/RecentlyViewedProducts';
 
 // Samma getStock funktion som i ProductCard
 const getStock = (v: ProductVariant) => {
@@ -49,6 +50,16 @@ export const ProductDetail = () => {
 
         if (productError) throw productError;
         setProduct(productData);
+
+        // Spåra produktvisning i cookies
+        if (productData) {
+          trackProductView(
+            productData.id,
+            productData.name,
+            productData.price,
+            productData.image_url || undefined
+          );
+        }
 
         // Hämta varianter
         const { data: variantsData, error: variantsError } = await supabase
