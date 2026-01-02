@@ -104,7 +104,7 @@ export const CookieConsentBanner = () => {
   if (!showBanner) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-black/90 backdrop-blur-lg shadow-2xl border-t">
+    <div className="fixed bottom-0 left-0 right-0 z-50 p-4  shadow-xl">
       <div className="container mx-auto max-w-4xl">
         <Card className="border-0 bg-white/95 dark:bg-gray-900/95">
           <CardHeader>
@@ -114,7 +114,6 @@ export const CookieConsentBanner = () => {
                 <CardTitle>🍪 Vi använder cookies</CardTitle>
                 <CardDescription className="mt-2">
                   Vi använder cookies för att förbättra din upplevelse på vår webbplats.
-                  Nödvändiga cookies krävs för att sidan ska fungera korrekt.
                 </CardDescription>
               </div>
             </div>
